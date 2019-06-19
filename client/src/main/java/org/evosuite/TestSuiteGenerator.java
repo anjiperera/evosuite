@@ -672,6 +672,7 @@ public class TestSuiteGenerator {
 			TestCaseExecutor.getInstance().addObserver(checker);
 		}
 
+		Properties.STRATEGY = Properties.Strategy.MOSUITE;
 		TestGenerationStrategy strategy = TestSuiteGeneratorHelper.getTestGenerationStrategy();
 		TestSuiteChromosome testSuite = strategy.generateTests();
 
