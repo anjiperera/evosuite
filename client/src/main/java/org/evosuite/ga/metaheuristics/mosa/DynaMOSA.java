@@ -158,7 +158,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		}
 
 		// next generations
-		while (!isFinished() && this.goalsManager.getUncoveredGoals().size() > 0) {
+		while (!isFinished() /*&& this.goalsManager.getUncoveredGoals().size() > 0*/) {
 			this.evolve();
 			this.notifyIteration();
 		}
@@ -210,6 +210,10 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	 */
 	@Override
 	protected List<T> getSolutions() {
+		if(goalsManager == null){
+			return new ArrayList<T>();
+		}
+
 		List<T> suite = new ArrayList<T>(this.goalsManager.getArchive());
 		return suite;
 	}

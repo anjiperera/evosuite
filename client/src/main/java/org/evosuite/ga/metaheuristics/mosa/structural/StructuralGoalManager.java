@@ -100,18 +100,19 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 			toArchive = true;
 			coveredGoals.put(f, tc);
 			uncoveredGoals.remove(f);
-			currentGoals.remove(f);
+			//currentGoals.remove(f);	//not removing covered goals from currentGoals
 		} else {
 			double bestSize = best.size();
 			double size = tc.size();
 			if (size < bestSize && size > 1){
 				toArchive = true;
 				coveredGoals.put(f, tc);
-				archive.get(best).remove(f);
+				/*archive.get(best).remove(f);
 				if (archive.get(best).size() == 0)
-					archive.remove(best);
+					archive.remove(best);*/
 			}
 		}
+		toArchive = true;	//since we want to archive the test case anyway
 
 		// update archive
 		if (toArchive){
