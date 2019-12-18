@@ -47,6 +47,7 @@ import org.evosuite.coverage.mutation.WeakMutationTestFitness;
 import org.evosuite.coverage.statement.StatementCoverageTestFitness;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
+import org.evosuite.ga.stoppingconditions.MaxArchiveStatementsStoppingCondition;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.ControlDependency;
@@ -76,8 +77,8 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	protected final Map<Integer, FitnessFunction<T>> branchCoverageFalseMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
 	private final Map<String, FitnessFunction<T>> branchlessMethodCoverageMap = new LinkedHashMap<String, FitnessFunction<T>>();
 
-	public MultiCriteriatManager(List<FitnessFunction<T>> fitnessFunctions) {
-		super(fitnessFunctions);
+	public MultiCriteriatManager(List<FitnessFunction<T>> fitnessFunctions, MaxArchiveStatementsStoppingCondition maxArchiveStatementsSc) {
+		super(fitnessFunctions, maxArchiveStatementsSc);
 		// initialize uncovered goals
 		uncoveredGoals.addAll(fitnessFunctions);
 

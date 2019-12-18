@@ -58,7 +58,7 @@ public class BranchesManager<T extends Chromosome> extends StructuralGoalManager
 	 * @param fitnessFunctions List of all FitnessFunction<T>
 	 */
 	public BranchesManager(List<FitnessFunction<T>> fitnessFunctions){
-		super(fitnessFunctions);
+		super(fitnessFunctions, null);
 		// initialize uncovered goals
 		uncoveredGoals.addAll(fitnessFunctions);
 		Set<FitnessFunction<T>> set = new HashSet<FitnessFunction<T>>();

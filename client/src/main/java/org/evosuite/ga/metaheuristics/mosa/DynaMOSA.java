@@ -32,6 +32,7 @@ import org.evosuite.ga.comparators.OnlyCrowdingComparator;
 import org.evosuite.ga.metaheuristics.mosa.structural.MultiCriteriatManager;
 import org.evosuite.ga.metaheuristics.mosa.structural.StructuralGoalManager;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
+import org.evosuite.ga.stoppingconditions.MaxArchiveStatementsStoppingCondition;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteFitnessFunction;
@@ -135,7 +136,10 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	public void generateSolution() {
 		logger.debug("executing generateSolution function");
 
-		this.goalsManager = new MultiCriteriatManager<T>(this.fitnessFunctions);
+		MaxArchiveStatementsStoppingCondition maxArchiveStatementsSc = new MaxArchiveStatementsStoppingCondition();
+		addStoppingCondition(maxArchiveStatementsSc);
+
+		this.goalsManager = new MultiCriteriatManager<T>(this.fitnessFunctions, maxArchiveStatementsSc);
 
 		LoggingUtils.getEvoLogger().info("* Initial Number of Goals in DynMOSA = " +
 				this.goalsManager.getCurrentGoals().size() +" / "+ this.getUncoveredGoals().size());

@@ -579,6 +579,10 @@ public class Properties {
 	@LongValue(min = 1)
 	public static long SEARCH_BUDGET = 60;
 
+	@Parameter(key = "max_archive_statements", group = "Search Algorithm", description = "Maximum statements in the archive")
+	@LongValue(min = 1)
+	public static long MAX_ARCHIVE_STATEMENTS = 10000;
+
 	@Parameter(key = "OUTPUT_DIR", group = "Runtime", description = "Directory in which to put generated files")
 	public static String OUTPUT_DIR = "evosuite-files";
 

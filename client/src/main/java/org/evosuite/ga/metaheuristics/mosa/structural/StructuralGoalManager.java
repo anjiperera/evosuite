@@ -28,8 +28,12 @@ import java.util.Set;
 
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
+import org.evosuite.ga.stoppingconditions.MaxArchiveStatementsStoppingCondition;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
+import org.evosuite.utils.LoggingUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 
@@ -37,6 +41,8 @@ import org.evosuite.testcase.TestFitnessFunction;
  * @author Annibale Panichella
  */
 public abstract class StructuralGoalManager<T extends Chromosome> {
+
+	private final static Logger logger = LoggerFactory.getLogger(StructuralGoalManager.class);
 
 	/** Set of yet to cover goals **/
 	protected Set<FitnessFunction<T>> uncoveredGoals;
@@ -50,11 +56,21 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 	/** Map of test to archive and corresponding covered targets*/
 	protected Map<T, List<FitnessFunction<T>>> archive;
 
-	protected StructuralGoalManager(List<FitnessFunction<T>> fitnessFunctions){
+	/**	Number of statements in the archive **/
+	private long numStatementsInArchive = 0L;
+
+	private MaxArchiveStatementsStoppingCondition maxArchiveStatementsSc;
+
+	protected StructuralGoalManager(List<FitnessFunction<T>> fitnessFunctions, MaxArchiveStatementsStoppingCondition maxArchiveStatementsSc){
 		uncoveredGoals = new HashSet<FitnessFunction<T>>(fitnessFunctions.size());
 		currentGoals = new HashSet<FitnessFunction<T>>(fitnessFunctions.size());
 		coveredGoals = new HashMap<FitnessFunction<T>, T>(fitnessFunctions.size());
 		archive = new HashMap<T, List<FitnessFunction<T>>>();
+		if (maxArchiveStatementsSc == null){
+			this.maxArchiveStatementsSc = new MaxArchiveStatementsStoppingCondition();
+		} else{
+			this.maxArchiveStatementsSc = maxArchiveStatementsSc;
+		}
 	}
 
 	/**
@@ -88,6 +104,16 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 	}
 
 	protected void updateCoveredGoals(FitnessFunction<T> f, T tc) {
+		if (archive.get(tc) == null){ //tc is definitely going to be archived, hence we need to check the archive size here.
+			long numStatementsInNewTestCase = tc.size();
+			numStatementsInArchive = numStatementsInArchive + numStatementsInNewTestCase;
+			if (numStatementsInArchive > maxArchiveStatementsSc.getLimit()){
+				logger.debug("Archive exceeds the maximum number of statements. Current size if the new test case is " +
+						"added: {}, number of test cases in archive: {}", numStatementsInArchive, archive.size());
+				maxArchiveStatementsSc.setMaxStatementsExceeded(true);
+				return;
+			}
+		}
 		// the next two lines are needed since that coverage information are used
 		// during EvoSuite post-processing
 		TestChromosome tch = (TestChromosome) tc;
@@ -120,6 +146,7 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 			if (coveredTargets == null){
 				List<FitnessFunction<T>> list = new ArrayList<FitnessFunction<T>>();
 				list.add(f);
+				maxArchiveStatementsSc.forceCurrentValue(numStatementsInArchive);
 				archive.put(tc, list);
 			} else {
 				coveredTargets.add(f);
