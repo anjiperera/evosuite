@@ -1040,6 +1040,9 @@ public class DefaultTestCase implements TestCase, Serializable {
 	}
 
 	private boolean fieldNeedsDownCast(FieldReference fieldReference, VariableReference var, Class<?> abstractClass) {
+		if(fieldReference.getSource() == null) {
+			return false;
+		}
 		if(fieldReference.getSource().equals(var)) {
 			if(!fieldReference.getField().getDeclaringClass().isAssignableFrom(abstractClass)) {
 				// Need downcast for real
