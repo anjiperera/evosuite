@@ -274,7 +274,7 @@ public abstract class AbstractStatement implements Statement, Serializable {
 	/** {@inheritDoc} */
 	@Override
 	public String getCode(Throwable exception) {
-		TestCodeVisitor visitor = new TestCodeVisitor();
+		TestCodeVisitor visitor = new TestCodeVisitor(100);
 		visitor.setException(this, exception);
 		visitor.visitStatement(this);
 		String code = visitor.getCode();

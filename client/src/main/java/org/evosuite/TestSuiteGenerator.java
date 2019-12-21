@@ -257,7 +257,7 @@ public class TestSuiteGenerator {
 
 			// progressMonitor.setCurrentPhase("Writing JUnit test cases");
 			LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Writing tests to file");
-			result = writeJUnitTestsAndCreateResult(testCases);
+			result = writeJUnitTestsAndCreateResult(testCases, true);
 			writeJUnitFailingTests();
 		}
 		TestCaseExecutor.pullDown();
@@ -323,7 +323,7 @@ public class TestSuiteGenerator {
 		TestSuiteChromosome suite = new TestSuiteChromosome();
 		DefaultTestCase test = buildLoadTargetClassTestCase(Properties.TARGET_CLASS);
 		suite.addTest(test);
-		writeJUnitTestsAndCreateResult(suite);
+		writeJUnitTestsAndCreateResult(suite, false);
 	}
 
 	/**
@@ -708,7 +708,7 @@ public class TestSuiteGenerator {
 	 * @param testSuite
 	 *            a test suite.
 	 */
-	public static TestGenerationResult writeJUnitTestsAndCreateResult(TestSuiteChromosome testSuite, String suffix) {
+	public static TestGenerationResult writeJUnitTestsAndCreateResult(TestSuiteChromosome testSuite, String suffix, boolean writingFilesToDisk) {
 		List<TestCase> tests = testSuite.getTests();
 		if (Properties.JUNIT_TESTS) {
 			ClientServices.getInstance().getClientNode().changeState(ClientState.WRITING_TESTS);
@@ -721,6 +721,7 @@ public class TestSuiteGenerator {
 
 			LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Writing JUnit test case '"
                     + (name + suffix) + "' to " + testDir);
+			suiteWriter.setWriteToDisk(writingFilesToDisk);
 			suiteWriter.writeTestSuite(name + suffix, testDir, testSuite.getLastExecutionResults());
 		}
 		return TestGenerationResultBuilder.buildSuccessResult();
@@ -731,8 +732,8 @@ public class TestSuiteGenerator {
 	 * @param testSuite
 	 *            the test cases which should be written to file
 	 */
-	public static TestGenerationResult writeJUnitTestsAndCreateResult(TestSuiteChromosome testSuite) {
-		return writeJUnitTestsAndCreateResult(testSuite, Properties.JUNIT_SUFFIX);
+	public static TestGenerationResult writeJUnitTestsAndCreateResult(TestSuiteChromosome testSuite, boolean writingFilesToDisk) {
+		return writeJUnitTestsAndCreateResult(testSuite, Properties.JUNIT_SUFFIX, writingFilesToDisk);
 	}
 
 	public void writeJUnitFailingTests() {
