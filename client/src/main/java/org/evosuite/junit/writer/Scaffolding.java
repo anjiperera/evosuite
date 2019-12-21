@@ -77,11 +77,16 @@ public class Scaffolding {
 	 * @return
 	 */
 	public static String getScaffoldingFileContent(String testName, List<ExecutionResult> results,
-			boolean wasSecurityException) {
+			boolean wasSecurityException, boolean writeToDisk) {
 
 		String name = getFileName(testName);
 
-		StringBuilder builder = new StringBuilder();
+		StringBuilder builder = null;
+		if (writeToDisk){
+			builder = new StringBuilder(5120);	//Initialising with 5KB for Scaffolding StringBuilder
+		} else{
+			builder = new StringBuilder(1024);	//Initialising with 1KB for Scaffolding StringBuilder
+		}
 
 		builder.append(getHeader(name, results, wasSecurityException));
 		if(results.isEmpty()) {
