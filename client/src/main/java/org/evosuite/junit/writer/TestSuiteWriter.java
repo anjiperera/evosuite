@@ -40,6 +40,7 @@ import org.evosuite.testcase.execution.ExecutionResult;
 import org.evosuite.testcase.execution.TestCaseExecutor;
 import org.evosuite.utils.ArrayUtil;
 import org.evosuite.utils.FileIOUtils;
+import org.evosuite.utils.LoggingUtils;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.objectweb.asm.Opcodes;
@@ -83,12 +84,15 @@ public class TestSuiteWriter implements Opcodes {
 
     private final UnitTestAdapter adapter = TestSuiteWriterUtils.getAdapter();
 
-    private TestCodeVisitor visitor = new TestCodeVisitor();
+    //private TestCodeVisitor visitor = new TestCodeVisitor();
+
+    private TestCodeVisitor visitor = new TestCodeVisitor(10240);
 
     private final static String NEWLINE = java.lang.System.getProperty("line.separator");
 
     private TestNameGenerationStrategy nameGenerator = null;
 
+    private boolean writeToDisk = false;
     /**
      * Add test to suite. If the test is a prefix of an existing test, just keep
      * existing test. If an existing test is a prefix of the test, replace the
@@ -184,7 +188,6 @@ public class TestSuiteWriter implements Opcodes {
      * @param directory Output directory
      */
     public List<File> writeTestSuite(String name, String directory, List<ExecutionResult> cachedResults) throws IllegalArgumentException {
-
         if (name == null || name.isEmpty()) {
             throw new IllegalArgumentException("Empty test class name");
         }
@@ -197,7 +200,13 @@ public class TestSuiteWriter implements Opcodes {
 
         List<File> generated = new ArrayList<File>();
         String dir = TestSuiteWriterUtils.makeDirectory(directory);
-        String content = "";
+        //String content = "";
+        StringBuilder content = null;
+        if (writeToDisk) {
+            content = new StringBuilder(52428800); //reserving 50MB as this stores the whole test suite‬
+        } else {
+            content = new StringBuilder(10240); //reserving 10KB as this stores only a test case
+        }
 
         // Execute all tests
         executor.newObservers();
@@ -239,37 +248,64 @@ public class TestSuiteWriter implements Opcodes {
         // let's try to remove any remaining assertions. TODO: Better solution
         removeAssertionsAfterException(results);
 
+        File scaffoldingFile = null;
+        String scaffoldingContent = null;
+        if (Properties.TEST_SCAFFOLDING && !Properties.NO_RUNTIME_DEPENDENCY) {
+            String scaffoldingName = Scaffolding.getFileName(name);
+            File file = new File(dir + "/" + scaffoldingName + ".java");
+            scaffoldingContent = Scaffolding.getScaffoldingFileContent(name, results,
+                    TestSuiteWriterUtils.hasAnySecurityException(results), writeToDisk);
+            FileIOUtils.writeFile(scaffoldingContent, file);
+            //generated.add(file);
+            scaffoldingFile = file;
+            //content += scaffoldingContent;
+            //content.append(scaffoldingContent);
+        }
 
         if (Properties.OUTPUT_GRANULARITY == OutputGranularity.MERGED || testCases.size() == 0) {
             File file = new File(dir + "/" + name + ".java");
             //executor.newObservers();
-            content = getUnitTestsAllInSameFile(name, results);
-            FileIOUtils.writeFile(content, file);
+
+            //content = getUnitTestsAllInSameFile(name, results)
+            content.append(getUnitTestsAllInSameFile(name, results));
+
+            FileIOUtils.writeFile(content.toString(), file);
             generated.add(file);
         } else {
             for (int i = 0; i < testCases.size(); i++) {
                 File file = new File(dir + "/" + name + "_" + i + ".java"); // e.g., dir/Foo_ESTest_0.java
                 //executor.newObservers();
+
                 String testCode = getOneUnitTestInAFile(name, i, results);
+
                 FileIOUtils.writeFile(testCode, file);
-                content += testCode;
+                //content += testCode;
+                content.append(testCode);
                 generated.add(file);
             }
         }
 
         if (Properties.TEST_SCAFFOLDING && !Properties.NO_RUNTIME_DEPENDENCY) {
-            String scaffoldingName = Scaffolding.getFileName(name);
+            /*String scaffoldingName = Scaffolding.getFileName(name);
             File file = new File(dir + "/" + scaffoldingName + ".java");
+            if(writeFileSize) {
+                LoggingUtils.getEvoLogger().info("Calling getScaffoldingFileContent");
+            }
             String scaffoldingContent = Scaffolding.getScaffoldingFileContent(name, results,
                     TestSuiteWriterUtils.hasAnySecurityException(results));
-            FileIOUtils.writeFile(scaffoldingContent, file);
-            generated.add(file);
-            content += scaffoldingContent;
+            if (writeFileSize) {
+                LoggingUtils.getEvoLogger().info("Finished getScaffoldingFileContent");
+                LoggingUtils.getEvoLogger().info("* Size of the String to be written to the scaffolding file: {}", scaffoldingContent.length());
+            }
+            FileIOUtils.writeFile(scaffoldingContent, file);*/
+            generated.add(scaffoldingFile);
+            //content += scaffoldingContent;
+            content.append(scaffoldingContent);
         }
 
         writeCoveredGoalsFile();
 
-        TestGenerationResultBuilder.getInstance().setTestSuiteCode(content);
+        TestGenerationResultBuilder.getInstance().setTestSuiteCode(content.toString());
         return generated;
     }
 
@@ -317,7 +353,7 @@ public class TestSuiteWriter implements Opcodes {
      * @param name Name of the class file
      * @return String representation of JUnit test file
      */
-    private String getUnitTestsAllInSameFile(String name, List<ExecutionResult> results) {
+    private StringBuilder getUnitTestsAllInSameFile(String name, List<ExecutionResult> results) {
 
 		/*
          * if there was any security exception, then we need to scaffold the
@@ -325,7 +361,7 @@ public class TestSuiteWriter implements Opcodes {
 		 */
         boolean wasSecurityException = TestSuiteWriterUtils.hasAnySecurityException(results);
 
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();    //Did not specify initCapacity for this as we are not going to use MERGED test suite
 
         builder.append(getHeader(name, name, results));
 
@@ -337,12 +373,13 @@ public class TestSuiteWriter implements Opcodes {
         	builder.append(getEmptyTest());
         } else {
         	for (int i = 0; i < testCases.size(); i++) {
-        		builder.append(testToString(i, i, results.get(i)));
+        		 builder.append(testToString(i, i, results.get(i)));
         	}
         }
         builder.append(getFooter());
 
-        return builder.toString();
+        //return builder.toString();
+        return builder;
     }
 
     /**
@@ -356,15 +393,21 @@ public class TestSuiteWriter implements Opcodes {
 
         boolean wasSecurityException = results.get(testId).hasSecurityException();
 
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder(10240);   //Initialising with 10KB as this stores a test case
 
-        builder.append(getHeader(name + "_" + testId, name, results));
+        ExecutionResult resultForTestId = results.get(testId);
+        List<ExecutionResult> resultsForGetHeader = new ArrayList<>();
+        resultsForGetHeader.add(resultForTestId);
+
+        builder.append(getHeader(name + "_" + testId, name, resultsForGetHeader));
+        //builder.append(getHeader(name + "_" + testId, name, results));
 
         if (!Properties.TEST_SCAFFOLDING) {
             builder.append(new Scaffolding().getBeforeAndAfterMethods(name + "_" + testId, wasSecurityException, results));
         }
 
         builder.append(testToString(testId, testId, results.get(testId)));
+
         builder.append(getFooter());
 
         return builder.toString();
@@ -405,7 +448,7 @@ public class TestSuiteWriter implements Opcodes {
      * @return a {@link java.lang.String} object.
      */
     protected String getImports(List<ExecutionResult> results) {
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder(1024);    //Initialising with 1KB for imports
         Set<Class<?>> imports = new HashSet<Class<?>>();
         Set<Class<?>> accessedClasses = new HashSet<Class<?>>();
         boolean wasSecurityException = TestSuiteWriterUtils.hasAnySecurityException(results);
@@ -420,6 +463,7 @@ public class TestSuiteWriter implements Opcodes {
             if(!hasException)
             	hasException = !result.noThrownExceptions();
         }
+
         visitor.clearExceptions();
 
         if(doesUseMocks(results)){
@@ -491,6 +535,7 @@ public class TestSuiteWriter implements Opcodes {
         List<String> importsSorted = new ArrayList<>(importNames);
 
         Collections.sort(importsSorted);
+
         for (String imp : importsSorted) {
             builder.append("import ");
             builder.append(imp);
@@ -513,7 +558,7 @@ public class TestSuiteWriter implements Opcodes {
      * @return a {@link java.lang.String} object.
      */
     protected String getHeader(String test_name, String scaffolding_name, List<ExecutionResult> results) {
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder(1024);    //Initialising with 1KB for the header
         builder.append("/*");
         builder.append(NEWLINE);
         builder.append(" * This file was automatically generated by EvoSuite");
@@ -547,6 +592,7 @@ public class TestSuiteWriter implements Opcodes {
 
         builder.append(" {");
         builder.append(NEWLINE);
+
         return builder.toString();
     }
 
@@ -619,7 +665,7 @@ public class TestSuiteWriter implements Opcodes {
 
         String testInfo = getInformation(id);
 
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder(10240);   //Initialising with 10KB for test String
         builder.append(NEWLINE);
         if (Properties.TEST_COMMENTS || testComment.containsKey(id)) {
             builder.append(METHOD_SPACE);
@@ -634,7 +680,7 @@ public class TestSuiteWriter implements Opcodes {
             // if TestNameGenerator did not generate a name, fall back to original naming
             methodName = TestSuiteWriterUtils.getNameOfTest(testCases, number);
         }
-        builder.append(adapter.getMethodDefinition(methodName));
+        builder.append(adapter.getMethodDefinition(methodName));    //Anji: StringBuilder is used without init capacity
 
 		/*
 		 * A test case might throw a lot of different kinds of exceptions. 
@@ -724,6 +770,7 @@ public class TestSuiteWriter implements Opcodes {
         String testCode = builder.toString();
         TestGenerationResultBuilder.getInstance().setTestCase(methodName, testCode, test,
                 testInfo, result);
+
         return testCode;
     }
 
@@ -745,7 +792,7 @@ public class TestSuiteWriter implements Opcodes {
         TestCase test = testCases.get(num);
         Set<TestFitnessFunction> coveredGoals = test.getCoveredGoals();
 
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder(1024);    //Initialising with 1KB for testInfo
         builder.append("Test case number: " + num);
 
         if (!coveredGoals.isEmpty()) {
@@ -799,5 +846,9 @@ public class TestSuiteWriter implements Opcodes {
             }
             FileIOUtils.writeFile(builder.toString(), file);
         }
+    }
+
+    public void setWriteToDisk(boolean writeToDisk){
+        this.writeToDisk = writeToDisk;
     }
 }
