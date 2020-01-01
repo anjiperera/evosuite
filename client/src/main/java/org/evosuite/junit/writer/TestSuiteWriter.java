@@ -86,7 +86,7 @@ public class TestSuiteWriter implements Opcodes {
 
     //private TestCodeVisitor visitor = new TestCodeVisitor();
 
-    private TestCodeVisitor visitor = new TestCodeVisitor(10240);
+    private TestCodeVisitor visitor = new TestCodeVisitor(2048);
 
     private final static String NEWLINE = java.lang.System.getProperty("line.separator");
 
@@ -203,9 +203,9 @@ public class TestSuiteWriter implements Opcodes {
         //String content = "";
         StringBuilder content = null;
         if (writeToDisk) {
-            content = new StringBuilder(52428800); //reserving 50MB as this stores the whole test suite‬
+            content = new StringBuilder(1048576); //reserving 1MB as this stores the whole test suite‬
         } else {
-            content = new StringBuilder(10240); //reserving 10KB as this stores only a test case
+            content = new StringBuilder(2048); //reserving 2KB as this stores only a test case
         }
 
         // Execute all tests
@@ -361,7 +361,7 @@ public class TestSuiteWriter implements Opcodes {
 		 */
         boolean wasSecurityException = TestSuiteWriterUtils.hasAnySecurityException(results);
 
-        StringBuilder builder = new StringBuilder();    //Did not specify initCapacity for this as we are not going to use MERGED test suite
+        StringBuilder builder = new StringBuilder(1048576); //reserving 1MB as this stores the whole test suite‬
 
         builder.append(getHeader(name, name, results));
 
@@ -665,7 +665,7 @@ public class TestSuiteWriter implements Opcodes {
 
         String testInfo = getInformation(id);
 
-        StringBuilder builder = new StringBuilder(10240);   //Initialising with 10KB for test String
+        StringBuilder builder = new StringBuilder(2048);   //Initialising with 2KB for test String
         builder.append(NEWLINE);
         if (Properties.TEST_COMMENTS || testComment.containsKey(id)) {
             builder.append(METHOD_SPACE);
