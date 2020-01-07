@@ -361,7 +361,7 @@ public class TestSuiteWriter implements Opcodes {
 		 */
         boolean wasSecurityException = TestSuiteWriterUtils.hasAnySecurityException(results);
 
-        StringBuilder builder = new StringBuilder();    //Did not specify initCapacity for this as we are not going to use MERGED test suite
+        StringBuilder builder = new StringBuilder(52428800);    //reserving 50MB as this stores the whole test suite
 
         builder.append(getHeader(name, name, results));
 
