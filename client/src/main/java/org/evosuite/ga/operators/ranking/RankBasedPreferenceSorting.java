@@ -54,12 +54,12 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 	 */
 	@Override
 	public void computeRankingAssignment(List<T> solutions, Set<FitnessFunction<T>> uncovered_goals) {
+		this.fronts = new ArrayList<List<T>>(solutions.size());
+
 		if (solutions.isEmpty()) {
 			logger.debug("solution is empty");
 			return;
 		}
-
-		this.fronts = new ArrayList<List<T>>(solutions.size());
 
 		// first apply the "preference sorting" to the first front only
 		// then compute the ranks according to the non-dominate sorting algorithm
