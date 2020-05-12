@@ -117,6 +117,7 @@ public class CommandLineParameters {
 				"target criterion for test generation. Can define more than one criterion by using a ':' separated list");
 		Option seed = new Option("seed", true, "seed for random number generator");
 		Option mem = new Option("mem", true,"heap size for client process (in megabytes)");
+		Option permSize = new Option("permSize", true,"max perm size for client process (in megabytes)");
 		Option libraryPath = new Option("libraryPath", true,"java library path to native libraries of the project under test");
 		Option startedByCtg = new Option("startedByCtg",false, "Determine if current process was started by a CTG process");
 		Option inheritance = new Option("inheritanceTree","Cache inheritance tree during setup");
@@ -151,6 +152,7 @@ public class CommandLineParameters {
 		options.addOption(criterion);
 		options.addOption(seed);
 		options.addOption(mem);
+		options.addOption(permSize);
 		options.addOption(libraryPath);
 		options.addOption(evosuiteCP);
 		options.addOption(inheritance);
@@ -264,6 +266,10 @@ public class CommandLineParameters {
 
 		if (line.hasOption("heapdump")) {
 			javaOpts.add("-XX:+HeapDumpOnOutOfMemoryError");
+		}
+		//-XX:MaxPermSize=128M
+		if (line.hasOption("permSize")) {
+			javaOpts.add("-XX:MaxPermSize=" + line.getOptionValue("permSize") + "M");
 		}
 	}
 }
