@@ -1,6 +1,8 @@
 package org.evosuite.defectprediction.method;
 
+import org.apache.commons.lang3.StringUtils;
 import org.evosuite.utils.LoggingUtils;
+import org.evosuite.utils.StringUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +14,7 @@ public class MethodUtils {
         List<String> convertedParameters = convertParameters(parameters);
 
         String returnType = extractReturnType(methodEvoFormat);
-        String convertedReturnType = convertedReturnType(returnType);
+        String convertedReturnType = convertReturnType(returnType);
 
         /*String simpleMethodName = extractSimpleName(methodEvoFormat);
         if (simpleMethodName.equals("<init>")) {
@@ -66,7 +68,7 @@ public class MethodUtils {
         return methodEvoFormat.substring(0, methodEvoFormat.indexOf("("));
     }
 
-    private static String convertedReturnType(String returnType) {
+    private static String convertReturnType(String returnType) {
         return getEquivalentParameter(returnType);
     }
 
@@ -98,7 +100,12 @@ public class MethodUtils {
             }
 
             if (currentChar == '[') {   // TODO: [[ <-> [][]
-                char nextChar = paramStr.charAt(index + 1);
+                StringBuilder currentParam = new StringBuilder();
+                currentParam.append(currentChar);
+                index = handleParameterWithArray(paramStr, index, parameters, currentParam);
+                continue;
+
+                /*char nextChar = paramStr.charAt(index + 1);
                 if (isPrimitiveType(nextChar)) {
                     char[] parameter = {currentChar, nextChar};
                     parameters.add(new String(parameter));
@@ -112,7 +119,7 @@ public class MethodUtils {
                 } else {
                     LoggingUtils.getEvoLogger().error("Unexpected character after [ : " + nextChar);
                     continue;
-                }
+                }*/
             }
 
             if (currentChar == 'L') {
@@ -126,6 +133,32 @@ public class MethodUtils {
         }
 
         return parameters;
+    }
+
+    private static int handleParameterWithArray(String paramStr, int currentIndex, List<String> parameters, StringBuilder currentParam) {
+        char nextChar = paramStr.charAt(currentIndex + 1);
+        if (isPrimitiveType(nextChar)) {
+            StringBuilder parameter = new StringBuilder();
+            parameter.append(currentParam);
+            parameter.append(nextChar);
+            parameters.add(new String(parameter));
+
+            return currentIndex + 1;
+        } else if (nextChar == 'L') {
+            int fqClassParamEndIndex = paramStr.indexOf(';', currentIndex + 1);
+
+            StringBuilder parameter = new StringBuilder();
+            parameter.append(currentParam);
+            parameter.append(paramStr.substring(currentIndex + 1, fqClassParamEndIndex));
+            parameters.add(new String(parameter));
+
+            return fqClassParamEndIndex;
+        } else if (nextChar == '[') {
+            return handleParameterWithArray(paramStr, currentIndex + 1, parameters, currentParam.append(nextChar));
+        } else {
+            LoggingUtils.getEvoLogger().error("Unexpected character after [ : " + nextChar);
+            return currentIndex;
+        }
     }
 
     private static List<String> convertParameters(List<String> parameters) {
@@ -143,7 +176,27 @@ public class MethodUtils {
             return convertPrimitiveType(parameter.charAt(0));
         }
 
-        if (parameter.charAt(0) == '[') {   // TODO: [[ <-> [][]
+        if (parameter.contains("[")) {
+            int arrayDimension = countOccurrences(parameter, '[');
+            if (arrayDimension > 0) {
+                int parameterTypeLength = parameter.length() - arrayDimension;
+                if (parameterTypeLength == 1) {
+                    String convertedPrimitiveType = convertPrimitiveType(parameter.charAt(parameter.length() - 1));
+                    for (int iter = 0; iter < arrayDimension; iter++) {
+                        convertedPrimitiveType += "[]";
+                    }
+                    return convertedPrimitiveType;
+                } else {
+                    String simpleClass = extractSimpleClassName(parameter);
+                    for (int iter = 0; iter < arrayDimension; iter++) {
+                        simpleClass += "[]";
+                    }
+                    return simpleClass;
+                }
+            }
+        }
+
+        /*if (parameter.charAt(0) == '[') {   // TODO: [[ <-> [][]
             if (parameter.length() == 2) {
                 String convertedPrimitiveType = convertPrimitiveType(parameter.charAt(1));
                 return convertedPrimitiveType + "[]";
@@ -151,14 +204,33 @@ public class MethodUtils {
                 String simpleClass = parameter.substring(parameter.lastIndexOf('/') + 1);
                 return simpleClass + "[]";
             }
-        }
+        }*/
 
         if (parameter.charAt(0) == 'L') {
-            return parameter.substring(parameter.lastIndexOf('/') + 1);
+            return extractSimpleClassName(parameter);
         }
 
         LoggingUtils.getEvoLogger().error("Unidentified parameter: " + parameter);
         return "";
+    }
+
+    private static String extractSimpleClassName(String fqClassName) {
+        String simpleClassName = fqClassName.substring(fqClassName.lastIndexOf('/') + 1);
+        if (simpleClassName.contains("$")) {
+            simpleClassName = simpleClassName.substring(simpleClassName.indexOf('$') + 1);
+        }
+
+        return simpleClassName;
+    }
+
+    private static int countOccurrences(String parameter, char searchKey) {
+        int count = 0;
+        for (int index = 0; index < parameter.length(); index++) {
+            if (parameter.charAt(index) == searchKey) {
+                count++;
+            }
+        }
+        return count;
     }
 
     private static String convertPrimitiveType(char type) {
