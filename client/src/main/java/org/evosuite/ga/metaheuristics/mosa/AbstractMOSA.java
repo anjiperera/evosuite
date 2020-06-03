@@ -33,7 +33,10 @@ import org.evosuite.ProgressMonitor;
 import org.evosuite.Properties;
 import org.evosuite.Properties.SelectionFunction;
 import org.evosuite.coverage.FitnessFunctions;
+import org.evosuite.coverage.branch.BranchCoverageSuiteFitness;
+import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.coverage.exception.ExceptionCoverageSuiteFitness;
+import org.evosuite.defectprediction.method.MethodPool;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.ConstructionFailedException;
@@ -92,6 +95,14 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 			TestSuiteFitnessFunction suiteFit = FitnessFunctions.getFitnessFunction(criterion);
 			Class<?> testFit = FitnessFunctions.getTestFitnessFunctionClass(criterion);
 			this.suiteFitnessFunctions.put(suiteFit, testFit);
+
+			if (criterion == Properties.Criterion.BRANCH) {
+				((BranchCoverageSuiteFitness) suiteFit).calculateTotalNumTestCasesInZeroFront();
+			}
+
+			/*if (criterion == Properties.Criterion.BRANCH) {
+				MethodPool.getInstance(Properties.TARGET_CLASS).calculateNumTestCasesInZeroFront((BranchCoverageSuiteFitness) suiteFit);
+			}*/
 		}
 
 		this.budgetMonitor = new BudgetConsumptionMonitor();

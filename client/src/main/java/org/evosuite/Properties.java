@@ -1279,6 +1279,16 @@ public class Properties {
 	@Parameter(key = "tt_scope", description = "Testability transformation")
 	public static TransformationScope TT_SCOPE = TransformationScope.ALL;
 
+	@Parameter(key = "defect_prediction_level", description = "Level of defect prediction")
+	public static DefectPredictionLevel DP_LEVEL = DefectPredictionLevel.NONE;
+
+	public enum DefectPredictionLevel {
+		NONE, METHOD
+	}
+
+	@Parameter(key = "defect_prediction_dir", description = "Directory in which defect scores are stored")
+	public static String DP_DIR = "defect-predictions";
+
 	// ---------------------------------------------------------------
 	// Contracts / Asserts:
 	@Parameter(key = "check_contracts", description = "Check contracts during test execution")

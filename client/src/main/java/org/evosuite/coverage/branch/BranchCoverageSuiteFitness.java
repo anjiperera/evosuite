@@ -40,6 +40,7 @@ import org.evosuite.testcase.statements.ConstructorStatement;
 import org.evosuite.testcase.statements.Statement;
 import org.evosuite.testsuite.AbstractTestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteFitnessFunction;
+import org.evosuite.utils.LoggingUtils;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -542,5 +543,45 @@ public class BranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 		branchlessMethodCoverageMap = new LinkedHashMap<String, TestFitnessFunction>();
 
 		determineCoverageGoals(false);
+	}
+
+	public void setNumTestCasesInZeroFrontFor(int actualBranchId, int numTestCasesInZeroFront) {
+		if (branchCoverageTrueMap.containsKey(actualBranchId)) {
+			((BranchCoverageTestFitness) (branchCoverageTrueMap.get(actualBranchId))).setNumTestCasesInZeroFront(numTestCasesInZeroFront);
+		} else {
+			logger.error("Branch ID does not exist in the branch coverage true map: {}", actualBranchId);
+		}
+
+		if (branchCoverageFalseMap.containsKey(actualBranchId)) {
+			((BranchCoverageTestFitness) (branchCoverageFalseMap.get(actualBranchId))).setNumTestCasesInZeroFront(numTestCasesInZeroFront);
+		} else {
+			logger.error("Branch ID does not exist in the branch coverage false map: {}", actualBranchId);
+		}
+	}
+
+	public void setNumTestCasesInZeroFrontFor(String branchlessMethod, int numTestCasesInZeroFront) {
+		if (branchlessMethodCoverageMap.containsKey(branchlessMethod)) {
+			((BranchCoverageTestFitness) (branchlessMethodCoverageMap.get(branchlessMethod))).setNumTestCasesInZeroFront(numTestCasesInZeroFront);
+		} else {
+			logger.error("Branchless method does not exist in the branch coverage true map: {}", branchlessMethod);
+		}
+	}
+
+	public void calculateTotalNumTestCasesInZeroFront() {
+		int totalNumTestCasesInZeroFront = 0;
+
+		for (TestFitnessFunction testFit : branchCoverageTrueMap.values()) {
+			totalNumTestCasesInZeroFront += ((BranchCoverageTestFitness) testFit).getNumTestCasesInZeroFront();
+		}
+
+		for (TestFitnessFunction testFit : branchCoverageFalseMap.values()) {
+			totalNumTestCasesInZeroFront += ((BranchCoverageTestFitness) testFit).getNumTestCasesInZeroFront();
+		}
+
+		for (TestFitnessFunction testFit : branchlessMethodCoverageMap.values()) {
+			totalNumTestCasesInZeroFront += ((BranchCoverageTestFitness) testFit).getNumTestCasesInZeroFront();
+		}
+
+		LoggingUtils.getEvoLogger().info("* Total Number of Test Cases in Zero Front: " + totalNumTestCasesInZeroFront);
 	}
 }

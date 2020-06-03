@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.evosuite.Properties;
+import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.comparators.DominanceComparator;
@@ -100,17 +101,42 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 			// for each uncovered goal, peak up the best tests using the proper comparator
 			PreferenceSortingComparator<T> comp = new PreferenceSortingComparator<T>(f);
 
-			T best = null;
-			for (T test : solutionSet) {
-				int flag = comp.compare(test, best);
-				if (flag < 0 || (flag == 0  && Randomness.nextBoolean())) {
-					best = test;
-				} 
-			}
-			assert best != null;
+			if (f instanceof BranchCoverageTestFitness) {	//TODO: Refactor
+				int numTestCasesInZeroFront = ((BranchCoverageTestFitness) f).getNumTestCasesInZeroFront();
+				List<T> solutionSetCopy = new ArrayList<>();
+				for (T solution : solutionSet) {
+					solutionSetCopy.add(solution);
+				}
 
-			best.setRank(0);
-			zero_front.add(best);
+				for (int attempt = 0; attempt < numTestCasesInZeroFront; attempt++) {
+					T best = null;
+					for (T test : solutionSetCopy) {
+						int flag = comp.compare(test, best);
+						if (flag < 0 || (flag == 0  && Randomness.nextBoolean())) {
+							best = test;
+						}
+					}
+					assert best != null;
+
+					best.setRank(0);
+					zero_front.add(best);
+
+					solutionSetCopy.remove(best);
+				}
+			} else {
+				T best = null;
+				for (T test : solutionSet) {
+					int flag = comp.compare(test, best);
+					if (flag < 0 || (flag == 0  && Randomness.nextBoolean())) {
+						best = test;
+					}
+				}
+				assert best != null;
+
+				best.setRank(0);
+				zero_front.add(best);
+			}
+
 		}
 		return new ArrayList<T>(zero_front);
 	}

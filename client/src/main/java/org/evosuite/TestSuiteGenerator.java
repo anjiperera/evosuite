@@ -29,7 +29,10 @@ import org.evosuite.contracts.FailingTestSet;
 import org.evosuite.coverage.CoverageCriteriaAnalyzer;
 import org.evosuite.coverage.FitnessFunctions;
 import org.evosuite.coverage.TestFitnessFactory;
+import org.evosuite.coverage.branch.Branch;
+import org.evosuite.coverage.branch.BranchPool;
 import org.evosuite.coverage.dataflow.DefUseCoverageSuiteFitness;
+import org.evosuite.defectprediction.method.MethodPool;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
 import org.evosuite.junit.JUnitAnalyzer;
@@ -109,6 +112,18 @@ public class TestSuiteGenerator {
 		}
 
 		DependencyAnalysis.analyzeClass(Properties.TARGET_CLASS, Arrays.asList(cp.split(File.pathSeparator)));
+
+		if (Properties.DP_LEVEL == Properties.DefectPredictionLevel.METHOD) {
+			LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() +
+					"Defect Prediction Guidance: " + Properties.DefectPredictionLevel.METHOD);
+			MethodPool.getInstance(Properties.TARGET_CLASS).loadDefectScores();
+
+			BranchPool branchPool = BranchPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT());
+			MethodPool.getInstance(Properties.TARGET_CLASS).updateNumBranches(branchPool);
+
+			MethodPool.getInstance(Properties.TARGET_CLASS).calculateWeights();
+		}
+
 		LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Finished analyzing classpath");
 	}
 

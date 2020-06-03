@@ -24,8 +24,10 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
+import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.coverage.ControlFlowDistance;
+import org.evosuite.defectprediction.method.MethodPool;
 import org.evosuite.graphs.cfg.BytecodeInstructionPool;
 import org.evosuite.graphs.cfg.ControlDependency;
 import org.evosuite.testcase.execution.ExecutionResult;
@@ -45,8 +47,9 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 	private final boolean value;
 	private final String className;
 	private final String methodName;
-	
-	
+
+	private int numTestCasesInZeroFront = 1;
+
 	/**
 	 * The line number in the source code. This information is stored in the bytecode if the
 	 * code was compiled in debug mode. If no info, we would get a negative value (e.g., -1) here.
@@ -104,6 +107,8 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 			lineNumber = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT())
 					.getFirstLineNumberOfMethod(className,methodName);
 		}
+
+		setNumTestCasesInZeroFront(className, methodName);
 	}
 
 	/**
@@ -133,6 +138,8 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 		this.className = className;
 		this.methodName = methodName;
 		this.lineNumber = lineNumber;
+
+		setNumTestCasesInZeroFront(className, methodName);
 	}
 
 	/**
@@ -167,7 +174,9 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 		this.className = className;
 		this.methodName = methodName;
 		lineNumber = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT())
-				.getFirstLineNumberOfMethod(className,  methodName);		                                                                                                                  
+				.getFirstLineNumberOfMethod(className,  methodName);
+
+		setNumTestCasesInZeroFront(className, methodName);
 	}
 
 	/**
@@ -388,4 +397,22 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 			this.branch = null;
 	}
 
+	public int getNumTestCasesInZeroFront() {
+		return numTestCasesInZeroFront;
+	}
+
+	public void setNumTestCasesInZeroFront(int numTestCasesInZeroFront) {
+		this.numTestCasesInZeroFront = numTestCasesInZeroFront;
+	}
+
+	private void setNumTestCasesInZeroFront(String fullClassName, String methodName) {
+		if (Properties.DP_LEVEL == Properties.DefectPredictionLevel.METHOD) {
+			String className = fullClassName;
+			if (fullClassName.contains("$")) {
+				className = fullClassName.substring(0, fullClassName.indexOf('$'));
+			}
+
+			this.setNumTestCasesInZeroFront(MethodPool.getInstance(className).calculateNumTestCasesInZeroFront(fullClassName, methodName));
+		}
+	}
 }

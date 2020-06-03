@@ -25,6 +25,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LookupSwitchInsnNode;
 import org.objectweb.asm.tree.TableSwitchInsnNode;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -450,6 +451,26 @@ public class BranchPool {
 		return branchMap.get(className).get(methodName).size();
 	}
 
+	public int getBranchCountOfBothTypes(String className, String methodName) {
+		String fullClassName = methodName.substring(0, methodName.lastIndexOf('.'));
+
+		if (branchlessMethods.containsKey(fullClassName)) {
+            if (branchlessMethods.get(fullClassName).containsKey(methodName)) {
+                return 1;
+            }
+        }
+
+        return getBranchCountForMethod(fullClassName, methodName.substring(methodName.lastIndexOf('.') + 1));
+
+	    /*if (branchlessMethods.containsKey(className)) {
+			if (branchlessMethods.get(className).containsKey(className + "." + methodName)) {
+				return 1;
+			}
+		}
+
+		return getBranchCountForMethod(className, methodName);*/
+	}
+
 	public int getNonArtificialBranchCountForMethod(String className,
 	        String methodName) {
 		if (branchMap.get(className) == null)
@@ -791,6 +812,36 @@ public class BranchPool {
 		return r;
 	}
 
+	public List<String> retrieveMethodsInClass(String className) {
+		List<String> methods = new ArrayList<>();
+
+		/*if (branchMap.containsKey(className)) {
+			methods.addAll(branchMap.get(className).keySet());
+		}
+
+		if (branchlessMethods.containsKey(className)) {
+			for (String fqMethodName : branchlessMethods.get(className).keySet()) {
+				methods.add(fqMethodName.substring(className.length() +	1));
+			}
+		}*/
+
+		for (String classNameInBranchMap : branchMap.keySet()) {
+		    if (classNameInBranchMap.startsWith(className)) {
+		        for (String methodName : branchMap.get(classNameInBranchMap).keySet()) {
+		            methods.add(classNameInBranchMap + "." + methodName);
+                }
+            }
+        }
+
+		for (String classNameInBranchlessMethods : branchlessMethods.keySet()) {
+		    if (classNameInBranchlessMethods.startsWith(className)) {
+		        methods.addAll(branchlessMethods.get(classNameInBranchlessMethods).keySet());
+            }
+        }
+
+		return methods;
+	}
+
 	/**
 	 * <p>
 	 * getDefaultBranchForSwitch
@@ -884,4 +935,46 @@ public class BranchPool {
 		branchCounter -= numBranches;
 	}
 
+	public List<Branch> getBranchesFor(String className, String methodName) {
+		Set<String> branchlessMethodNames = getBranchlessMethods(className);
+		/*if (branchlessMethodNames.contains(className + "." + methodName)) {
+			Branch rootBranch = getBranch(this.branchlessMethods.get(className).get(className + "." + methodName));
+			List<Branch> branches = new ArrayList<>();
+			branches.add(rootBranch);
+			return branches;
+		}*/
+
+		if (this.branchMap.containsKey(className)) {
+			if (this.branchMap.get(className).containsKey(methodName)) {
+				return branchMap.get(className).get(methodName);
+			}
+		}
+
+		logger.error("There are no branches for the class: {} and method: {} ", className, methodName);
+		return new ArrayList<>();
+	}
+
+	public List<Integer> getBranchIdsFor(String className, String methodName) {
+		List<Integer> branchIds = new ArrayList<>();
+
+        String fullClassName = methodName.substring(0, methodName.lastIndexOf('.'));
+
+        if (branchMap.containsKey(fullClassName)) {
+            if (branchMap.get(fullClassName).containsKey(methodName.substring(methodName.lastIndexOf('.') + 1))) {
+                for (Branch branch : branchMap.get(fullClassName).get(methodName.substring(methodName.lastIndexOf('.') + 1))) {
+                    branchIds.add(branch.getActualBranchId());
+                }
+            }
+        }
+
+        /*if (branchMap.containsKey(className)) {
+			if (branchMap.get(className).containsKey(methodName)) {
+				for (Branch branch : branchMap.get(className).get(methodName)) {
+					branchIds.add(branch.getActualBranchId());
+				}
+			}
+		}*/
+
+		return branchIds;
+	}
 }
