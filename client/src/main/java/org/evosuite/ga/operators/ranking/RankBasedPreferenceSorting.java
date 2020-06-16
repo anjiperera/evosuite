@@ -111,6 +111,10 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 				for (int attempt = 0; attempt < numTestCasesInZeroFront; attempt++) {
 					T best = null;
 					for (T test : solutionSetCopy) {
+						if (Double.compare(test.getFitness(f), 0.0) == 0) {
+							continue;
+						}
+
 						int flag = comp.compare(test, best);
 						if (flag < 0 || (flag == 0  && Randomness.nextBoolean())) {
 							best = test;
@@ -126,6 +130,10 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 			} else {
 				T best = null;
 				for (T test : solutionSet) {
+					if (Double.compare(test.getFitness(f), 0.0) == 0) {
+						continue;
+					}
+
 					int flag = comp.compare(test, best);
 					if (flag < 0 || (flag == 0  && Randomness.nextBoolean())) {
 						best = test;
