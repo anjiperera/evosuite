@@ -103,6 +103,10 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 
 			if (f instanceof BranchCoverageTestFitness) {	//TODO: Refactor
 				int numTestCasesInZeroFront = ((BranchCoverageTestFitness) f).getNumTestCasesInZeroFront();
+				if (numTestCasesInZeroFront == 0) {
+				    continue;
+                }
+
 				List<T> solutionSetCopy = new ArrayList<>();
 				for (T solution : solutionSet) {
 					solutionSetCopy.add(solution);
@@ -122,10 +126,12 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 					}
 					assert best != null;
 
-					best.setRank(0);
-					zero_front.add(best);
+					if (best != null) {
+                        best.setRank(0);
+                        zero_front.add(best);
 
-					solutionSetCopy.remove(best);
+                        solutionSetCopy.remove(best);
+                    }
 				}
 			} else {
 				T best = null;
