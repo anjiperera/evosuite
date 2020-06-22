@@ -107,14 +107,13 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 				    continue;
                 }
 
-				List<T> solutionSetCopy = new ArrayList<>();
-				for (T solution : solutionSet) {
-					solutionSetCopy.add(solution);
-				}
-
 				for (int attempt = 0; attempt < numTestCasesInZeroFront; attempt++) {
 					T best = null;
-					for (T test : solutionSetCopy) {
+					for (T test : solutionSet) {
+						if (test.isSelectedToZeroFront()) {
+							continue;
+						}
+
 						if (Double.compare(test.getFitness(f), 0.0) == 0) {
 							continue;
 						}
@@ -130,8 +129,12 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
                         best.setRank(0);
                         zero_front.add(best);
 
-                        solutionSetCopy.remove(best);
+                        best.setSelectedToZeroFront(true);
                     }
+				}
+
+				for (T test : solutionSet) {
+					test.setSelectedToZeroFront(false);
 				}
 			} else {
 				T best = null;
