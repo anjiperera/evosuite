@@ -18,9 +18,17 @@ public class Method {
 
     private List<Integer> branchIds = new ArrayList<>();
 
+    // TEMP: Debug
+    private boolean isBuggy = false;
+
     public Method(String fqMethodName, double defectScore) {
         this.fqMethodName = fqMethodName;
         this.defectScore = defectScore;
+
+        // TEMP: Debug
+        if (Double.compare(defectScore, 1.0) == 0) {
+            isBuggy = true;
+        }
     }
 
     public int getNumBranches() {
@@ -62,5 +70,9 @@ public class Method {
 
     public void setBranchIds(List<Integer> branchIds) {
         this.branchIds = branchIds;
+    }
+
+    public boolean isBuggy() {
+        return isBuggy;
     }
 }

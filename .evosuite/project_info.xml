@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Project>
+    <totalNumberOfTestableClasses>2</totalNumberOfTestableClasses>
+    <cut>
+        <fullNameOfTargetClass>org.apache.commons.lang3.tuple.Pair</fullNameOfTargetClass>
+        <fullNameOfTestSuite>org.apache.commons.lang3.tuple.Pair_ESTest</fullNameOfTestSuite>
+        <generation>
+            <id>0</id>
+            <failed>true</failed>
+            <modified>true</modified>
+            <timeBudgetInSeconds>61</timeBudgetInSeconds>
+            <memoryInMB>1000</memoryInMB>
+            <std_err_CLIENT>C:\Research\Evosuite\evosuite_fork\.evosuite\tmp_2019_07_30_20_20_36\logs\org.apache.commons.lang3.tuple.Pair\std_err_CLIENT.log</std_err_CLIENT>
+            <std_out_CLIENT>C:\Research\Evosuite\evosuite_fork\.evosuite\tmp_2019_07_30_20_20_36\logs\org.apache.commons.lang3.tuple.Pair\std_out_CLIENT.log</std_out_CLIENT>
+            <std_err_MASTER>C:\Research\Evosuite\evosuite_fork\.evosuite\tmp_2019_07_30_20_20_36\logs\org.apache.commons.lang3.tuple.Pair\std_err_MASTER.log</std_err_MASTER>
+            <std_out_MASTER>C:\Research\Evosuite\evosuite_fork\.evosuite\tmp_2019_07_30_20_20_36\logs\org.apache.commons.lang3.tuple.Pair\std_out_MASTER.log</std_out_MASTER>
+        </generation>
+    </cut>
+    <cut>
+        <fullNameOfTargetClass>org.apache.commons.lang3.StringUtils</fullNameOfTargetClass>
+        <fullNameOfTestSuite>org.apache.commons.lang3.StringUtils_ESTest</fullNameOfTestSuite>
+        <generation>
+            <id>0</id>
+            <failed>true</failed>
+            <modified>true</modified>
+            <timeBudgetInSeconds>178</timeBudgetInSeconds>
+            <memoryInMB>1000</memoryInMB>
+            <std_err_CLIENT>C:\Research\Evosuite\evosuite_fork\.evosuite\tmp_2019_07_30_20_20_36\logs\org.apache.commons.lang3.StringUtils\std_err_CLIENT.log</std_err_CLIENT>
+            <std_out_CLIENT>C:\Research\Evosuite\evosuite_fork\.evosuite\tmp_2019_07_30_20_20_36\logs\org.apache.commons.lang3.StringUtils\std_out_CLIENT.log</std_out_CLIENT>
+            <std_err_MASTER>C:\Research\Evosuite\evosuite_fork\.evosuite\tmp_2019_07_30_20_20_36\logs\org.apache.commons.lang3.StringUtils\std_err_MASTER.log</std_err_MASTER>
+            <std_out_MASTER>C:\Research\Evosuite\evosuite_fork\.evosuite\tmp_2019_07_30_20_20_36\logs\org.apache.commons.lang3.StringUtils\std_out_MASTER.log</std_out_MASTER>
+        </generation>
+    </cut>
+</Project>

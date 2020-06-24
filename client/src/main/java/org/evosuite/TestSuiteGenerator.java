@@ -113,13 +113,19 @@ public class TestSuiteGenerator {
 
 		DependencyAnalysis.analyzeClass(Properties.TARGET_CLASS, Arrays.asList(cp.split(File.pathSeparator)));
 
+		// TEMP: Debug
+		MethodPool.getInstance(Properties.TARGET_CLASS).loadDefectScores();
+		BranchPool branchPool = BranchPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT());
+		MethodPool.getInstance(Properties.TARGET_CLASS).updateNumBranches(branchPool);
+
 		if (Properties.DP_LEVEL == Properties.DefectPredictionLevel.METHOD) {
 			LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() +
 					"Defect Prediction Guidance: " + Properties.DefectPredictionLevel.METHOD);
-			MethodPool.getInstance(Properties.TARGET_CLASS).loadDefectScores();
+			// TEMP: Debug
+			// MethodPool.getInstance(Properties.TARGET_CLASS).loadDefectScores();
 
-			BranchPool branchPool = BranchPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT());
-			MethodPool.getInstance(Properties.TARGET_CLASS).updateNumBranches(branchPool);
+			// BranchPool branchPool = BranchPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT());
+			// MethodPool.getInstance(Properties.TARGET_CLASS).updateNumBranches(branchPool);
 
 			MethodPool.getInstance(Properties.TARGET_CLASS).calculateWeights();
 		}

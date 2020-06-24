@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.testcase.TestChromosome;
@@ -137,6 +138,19 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 
 	public int getNumberOfUncoveredTargets(Class<?> targetClass) {
 		return (int) this.uncoveredGoals.stream().filter(target -> target.getClass() == targetClass).count();
+	}
+
+	public int getTestsInArchiveCoveringBuggyBranches() {
+		int archiveSizeBuggyBranches = 0;
+		for (List<FitnessFunction<T>> coveredTargets : archive.values()) {
+			for (FitnessFunction<T> coveredTarget : coveredTargets) {
+				if (((BranchCoverageTestFitness) coveredTarget).isBuggyBranch()) {
+					archiveSizeBuggyBranches++;
+					break;
+				}
+			}
+		}
+		return archiveSizeBuggyBranches;
 	}
 
 }

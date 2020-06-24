@@ -50,6 +50,9 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 
 	private int numTestCasesInZeroFront = 1;
 
+	// TEMP: Debug
+	private boolean isBuggy = false;
+
 	/**
 	 * The line number in the source code. This information is stored in the bytecode if the
 	 * code was compiled in debug mode. If no info, we would get a negative value (e.g., -1) here.
@@ -109,6 +112,7 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 		}
 
 		setNumTestCasesInZeroFront(className, methodName);
+		setBuggy(className, methodName);
 	}
 
 	/**
@@ -140,6 +144,7 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 		this.lineNumber = lineNumber;
 
 		setNumTestCasesInZeroFront(className, methodName);
+		setBuggy(className, methodName);
 	}
 
 	/**
@@ -177,6 +182,7 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 				.getFirstLineNumberOfMethod(className,  methodName);
 
 		setNumTestCasesInZeroFront(className, methodName);
+		setBuggy(className, methodName);
 	}
 
 	/**
@@ -414,5 +420,22 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 
 			this.setNumTestCasesInZeroFront(MethodPool.getInstance(className).calculateNumTestCasesInZeroFront(fullClassName, methodName));
 		}
+	}
+
+	private void setBuggy (String fullClassName, String methodName) {
+		String className = fullClassName;
+		if (fullClassName.contains("$")) {
+			className = fullClassName.substring(0, fullClassName.indexOf('$'));
+		}
+
+		this.setBuggy(MethodPool.getInstance(className).isBuggy(fullClassName, methodName));
+	}
+
+	public boolean isBuggy() {
+		return isBuggy;
+	}
+
+	public void setBuggy(boolean buggy) {
+		isBuggy = buggy;
 	}
 }

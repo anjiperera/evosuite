@@ -19,11 +19,9 @@
  */
 package org.evosuite.ga.metaheuristics.mosa;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
+
 import org.evosuite.Properties;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
@@ -38,6 +36,8 @@ import org.evosuite.testsuite.TestSuiteFitnessFunction;
 import org.evosuite.utils.LoggingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.persistence.criteria.CriteriaBuilder;
 
 /**
  * Implementation of the DynaMOSA (Many Objective Sorting Algorithm) described in the paper
@@ -66,6 +66,9 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		super(factory);
 	}
 
+	private int currentArchiveSize = 0;
+	private int currentArchiveSizeBuggyBranches = 0;
+
 	/** {@inheritDoc} */
 	@Override
 	protected void evolve() {
@@ -78,6 +81,8 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		// Ranking the union
 		logger.debug("Union Size = {}", union.size());
+
+		int unionSize = union.size();
 
 		// Ranking the union using the best rank algorithm (modified version of the non dominated sorting algorithm
 		this.rankingFunction.computeRankingAssignment(union, this.goalsManager.getCurrentGoals());
@@ -119,6 +124,37 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 			remain = 0;
 		}
+
+		Map<Integer, Integer> numTestsInFronts = new HashMap<>();
+		for (T individual : population) {
+			int numTests = 0;
+			if (numTestsInFronts.containsKey(individual.getRank())) {
+				numTests = numTestsInFronts.get(individual.getRank());
+			}
+			numTests++;
+			numTestsInFronts.put(individual.getRank(), numTests);
+		}
+
+		LoggingUtils.getEvoLogger().info("Iteration: {}\t Current Population (Offspring + Previous): {}\t Population (Going to Next Iteration): {}",
+				currentIteration, unionSize, population.size());
+
+		int archiveSizeDiff = goalsManager.getArchive().size() - currentArchiveSize;
+		currentArchiveSize = goalsManager.getArchive().size();
+
+		int testsInArchiveCoveringBuggyBranches = goalsManager.getTestsInArchiveCoveringBuggyBranches();
+		int archiveSizeBuggyBranchesDiff = testsInArchiveCoveringBuggyBranches - currentArchiveSizeBuggyBranches;
+		currentArchiveSizeBuggyBranches = testsInArchiveCoveringBuggyBranches;
+
+		LoggingUtils.getEvoLogger().info("Increased Archive Size: {}\t Increased # Tests in Archive Covering Buggy Branches: {}",
+				archiveSizeDiff, archiveSizeBuggyBranchesDiff);
+		LoggingUtils.getEvoLogger().info("Archive Size: {}", currentArchiveSize);
+		LoggingUtils.getEvoLogger().info("# Tests in Archive Covering Buggy Branches: {}", currentArchiveSizeBuggyBranches);
+
+		for (int frontIndex : numTestsInFronts.keySet()) {
+			LoggingUtils.getEvoLogger().info("Front Index: {}\t Size: {}", frontIndex, numTestsInFronts.get(frontIndex));
+		}
+
+		LoggingUtils.getEvoLogger().info("---------------------------");
 
 		this.currentIteration++;
 		//logger.debug("N. fronts = {}", ranking.getNumberOfSubfronts());

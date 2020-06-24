@@ -230,7 +230,9 @@ public class MethodPool {
         try {
             method = getMethodsByEvoFormatName(className + "." + methodName);
             int numTestCasesInZeroFront = (int) (method.getWeight() / this.defaultWeight);
-            return numTestCasesInZeroFront;
+            // TEMP: Debug
+            // return numTestCasesInZeroFront;
+            return numTestCasesInZeroFront > 0 ? 1 : 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -244,5 +246,17 @@ public class MethodPool {
         }
 
         throw new Exception("Method does not exist in the MethodPool: " + evoFormatName);
+    }
+
+    public boolean isBuggy(String className, String methodName) {
+        Method method = null;
+        try {
+            method = getMethodsByEvoFormatName(className + "." + methodName);
+            return method.isBuggy();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
     }
 }

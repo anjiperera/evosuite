@@ -255,4 +255,8 @@ public class BranchCoverageTestFitness extends TestFitnessFunction {
 		return goal.getNumTestCasesInZeroFront();
 	}
 
+	public boolean isBuggyBranch () {
+		return goal.isBuggy();
+	}
+
 }
