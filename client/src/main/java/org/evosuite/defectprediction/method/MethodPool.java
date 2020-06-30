@@ -17,6 +17,9 @@ public class MethodPool {
 
     private double defaultWeight;
 
+    private int totalNumBranches = 0;
+    private double scaleDownFactor = 0.0;
+
     //  org.apache.commons.lang.math.NumberUtils.min(SSS)S -> org.apache.commons.lang.math.NumberUtils:min(short;short;short;)short:
     private Map<String, String> equivalentMethodNames = new HashMap<>();
 
@@ -54,6 +57,9 @@ public class MethodPool {
         List<String> methodsEvoFormat = branchPool.retrieveMethodsInClass(className);
 
         for (String methodEvoFormat : methodsEvoFormat) {
+            int branchCount = branchPool.getBranchCountOfBothTypes(className, methodEvoFormat);
+            totalNumBranches += branchCount;
+
             String fqConvertedMethodName = MethodUtils.convertMethodName(methodEvoFormat, className);
             //String fqConvertedMethodName = className + ":" + convertedMethodName;
 
@@ -64,7 +70,7 @@ public class MethodPool {
                 e.printStackTrace();
             }
             if (method != null) {
-                int branchCount = branchPool.getBranchCountOfBothTypes(className, methodEvoFormat);
+                // int branchCount = branchPool.getBranchCountOfBothTypes(className, methodEvoFormat);
                 if (branchCount == 0) {
                     LoggingUtils.getEvoLogger().error("Branch count is zero for the method: " + fqConvertedMethodName);
                 }
@@ -109,6 +115,15 @@ public class MethodPool {
         }
 
         return sumDefectScores;
+    }
+
+    public void calculateScaleDownFactor() {
+        int totalNumTestsInZeroFront = 0;
+        for (Method method : getMethods()) {
+            totalNumTestsInZeroFront += (int) (method.getWeight() / this.defaultWeight) * method.getNumBranches();
+        }
+
+        this.scaleDownFactor = (double) totalNumTestsInZeroFront / this.totalNumBranches;
     }
 
     private Map<String, Method> readDefectScores(String filename) {
@@ -229,7 +244,7 @@ public class MethodPool {
         Method method = null;
         try {
             method = getMethodsByEvoFormatName(className + "." + methodName);
-            int numTestCasesInZeroFront = (int) (method.getWeight() / this.defaultWeight);
+            int numTestCasesInZeroFront = (int) Math.ceil(((int) (method.getWeight() / this.defaultWeight)) / this.scaleDownFactor);
             return numTestCasesInZeroFront;
         } catch (Exception e) {
             e.printStackTrace();

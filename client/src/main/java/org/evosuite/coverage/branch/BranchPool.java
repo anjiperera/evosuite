@@ -460,7 +460,7 @@ public class BranchPool {
             }
         }
 
-        return getBranchCountForMethod(fullClassName, methodName.substring(methodName.lastIndexOf('.') + 1));
+        return getBranchCountForMethod(fullClassName, methodName.substring(methodName.lastIndexOf('.') + 1)) * 2;
 
 	    /*if (branchlessMethods.containsKey(className)) {
 			if (branchlessMethods.get(className).containsKey(className + "." + methodName)) {
