@@ -123,6 +123,8 @@ public class TestSuiteGenerator {
 
 			MethodPool.getInstance(Properties.TARGET_CLASS).calculateWeights();
 			MethodPool.getInstance(Properties.TARGET_CLASS).calculateScaleDownFactor();
+
+			MethodPool.getInstance(Properties.TARGET_CLASS).calculateArchiveProbabilities();
 		}
 
 		LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Finished analyzing classpath");

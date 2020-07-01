@@ -126,6 +126,13 @@ public class MethodPool {
         this.scaleDownFactor = (double) totalNumTestsInZeroFront / this.totalNumBranches;
     }
 
+    public void calculateArchiveProbabilities() {
+        // TODO: As per now, archive probability is equal to the defect score
+        for (Method method : getMethods()) {
+            method.setArchiveProbability(method.getDefectScore());
+        }
+    }
+
     private Map<String, Method> readDefectScores(String filename) {
         Map<String, Method> methodsInFile = new HashMap<>();
 
@@ -259,5 +266,17 @@ public class MethodPool {
         }
 
         throw new Exception("Method does not exist in the MethodPool: " + evoFormatName);
+    }
+
+    public double getArchiveProbability(String className, String methodName) {
+        Method method = null;
+        try {
+            method = getMethodsByEvoFormatName(className + "." + methodName);
+            return method.getArchiveProbability();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return 0.0;
     }
 }

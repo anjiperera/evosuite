@@ -13,6 +13,7 @@ public class Method {
     private int numBranches;
     private double normDefectScore;
     private double weight;
+    private double archiveProbability;
 
     private String evoFormatName;
 
@@ -62,5 +63,13 @@ public class Method {
 
     public void setBranchIds(List<Integer> branchIds) {
         this.branchIds = branchIds;
+    }
+
+    public double getArchiveProbability() {
+        return archiveProbability;
+    }
+
+    public void setArchiveProbability(double archiveProbability) {
+        this.archiveProbability = archiveProbability;
     }
 }

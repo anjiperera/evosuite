@@ -26,10 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
+import org.evosuite.utils.Randomness;
 
 /**
  * 
@@ -113,6 +115,14 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 			}
 		}
 		toArchive = true;	//since we want to archive the test case anyway
+
+		if (f instanceof BranchCoverageTestFitness) {
+			if (Randomness.nextDouble() <= ((BranchCoverageTestFitness) f).getArchiveProbability()) {
+				toArchive = true;
+			} else {
+				toArchive = false;
+			}
+		}
 
 		// update archive
 		if (toArchive){

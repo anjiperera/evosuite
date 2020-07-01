@@ -49,6 +49,7 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 	private final String methodName;
 
 	private int numTestCasesInZeroFront = 1;
+	private double archiveProbability = 1.0;
 
 	/**
 	 * The line number in the source code. This information is stored in the bytecode if the
@@ -413,6 +414,15 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 			}
 
 			this.setNumTestCasesInZeroFront(MethodPool.getInstance(className).calculateNumTestCasesInZeroFront(fullClassName, methodName));
+			this.setArchiveProbability(MethodPool.getInstance(className).getArchiveProbability(fullClassName, methodName));
 		}
+	}
+
+	public double getArchiveProbability() {
+		return archiveProbability;
+	}
+
+	public void setArchiveProbability(double archiveProbability) {
+		this.archiveProbability = archiveProbability;
 	}
 }
