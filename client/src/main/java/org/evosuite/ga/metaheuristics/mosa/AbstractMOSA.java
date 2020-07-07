@@ -170,7 +170,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 		// Add new randomly generate tests
 		for (int i = 0; i < Properties.POPULATION * Properties.P_TEST_INSERTION; i++) {
 			T tch = null;
-			if (this.getCoveredGoals().size() == 0 || Randomness.nextBoolean()) {
+			if (this.getCoveredGoals().size() == 0 || Randomness.nextBoolean() || this.getSolutions().isEmpty()) {
 				tch = this.chromosomeFactory.getChromosome();
 				tch.setChanged(true);
 			} else {
