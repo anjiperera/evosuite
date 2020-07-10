@@ -116,14 +116,6 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 		}
 		toArchive = true;	//since we want to archive the test case anyway
 
-		if (f instanceof BranchCoverageTestFitness) {
-			if (Randomness.nextDouble() <= ((BranchCoverageTestFitness) f).getArchiveProbability()) {
-				toArchive = true;
-			} else {
-				toArchive = false;
-			}
-		}
-
 		// update archive
 		if (toArchive){
 			List<FitnessFunction<T>> coveredTargets = archive.get(tc);
