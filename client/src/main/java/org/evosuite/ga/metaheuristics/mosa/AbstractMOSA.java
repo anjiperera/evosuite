@@ -82,6 +82,8 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 	/** Object used to keep track of the execution time needed to reach the maximum coverage */
 	protected final BudgetConsumptionMonitor budgetMonitor;
 
+	protected boolean archiveProbEnabled = false;
+
 	/**
 	 * Constructor.
 	 * 
@@ -98,6 +100,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 
 			if (criterion == Properties.Criterion.BRANCH) {
 				((BranchCoverageSuiteFitness) suiteFit).calculateTotalNumTestCasesInZeroFront();
+				((BranchCoverageSuiteFitness) suiteFit).printAllBranchesInBuggyMethods();
 			}
 
 			/*if (criterion == Properties.Criterion.BRANCH) {
@@ -568,5 +571,13 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
         suite.setNumOfNotCoveredGoals(suiteFitnessFunction, numberUncoveredTargets);
       }
     }
+
+    public void enableArchiveProb() {
+    	this.archiveProbEnabled = true;
+	}
+
+	public void disableArchiveProb() {
+    	this.archiveProbEnabled = false;
+	}
 
 }

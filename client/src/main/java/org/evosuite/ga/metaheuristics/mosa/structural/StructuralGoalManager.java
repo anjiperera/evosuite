@@ -133,6 +133,26 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 		return this.archive.keySet();
 	}
 
+	public Set<T> getArchiveFiltered() {
+		Set<T> filteredArchive = new HashSet<>();
+
+		for (T test : archive.keySet()) {
+			for (FitnessFunction<T> f : archive.get(test)) {
+				if (f instanceof BranchCoverageTestFitness) {
+					if (Randomness.nextDouble() <= ((BranchCoverageTestFitness) f).getArchiveProbability()) {
+						filteredArchive.add(test);
+						break;
+					}
+				} else {
+					filteredArchive.add(test);
+					break;
+				}
+			}
+		}
+
+		return filteredArchive;
+	}
+
 	public int getNumberOfCoveredTargets(Class<?> targetClass) {
 		return (int) this.coveredGoals.keySet().stream().filter(target -> target.getClass() == targetClass).count();
 	}

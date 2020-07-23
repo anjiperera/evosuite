@@ -26,6 +26,7 @@ import org.evosuite.coverage.TestFitnessFactory;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
+import org.evosuite.ga.metaheuristics.mosa.DynaMOSA;
 import org.evosuite.ga.stoppingconditions.MaxStatementsStoppingCondition;
 import org.evosuite.result.TestGenerationResultBuilder;
 import org.evosuite.rmi.ClientServices;
@@ -114,7 +115,14 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
 
 			algorithm.generateSolution();
 
+			if (algorithm instanceof DynaMOSA) {
+				((DynaMOSA<TestSuiteChromosome>) algorithm).enableArchiveProb();
+			}
 			testSuite = (TestSuiteChromosome) algorithm.getBestIndividual();
+			if (algorithm instanceof DynaMOSA) {
+				((DynaMOSA<TestSuiteChromosome>) algorithm).disableArchiveProb();
+			}
+
 			if (testSuite.getTestChromosomes().isEmpty()) {
 				LoggingUtils.getEvoLogger().warn(ClientProcess.getPrettyPrintIdentifier() + "Could not generate any test case");
 			}

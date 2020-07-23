@@ -214,7 +214,12 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 			return new ArrayList<T>();
 		}
 
-		List<T> suite = new ArrayList<T>(this.goalsManager.getArchive());
+		List<T> suite;
+		if (this.archiveProbEnabled) {
+			suite = new ArrayList<T>(this.goalsManager.getArchiveFiltered());
+		} else {
+			suite = new ArrayList<T>(this.goalsManager.getArchive());
+		}
 		return suite;
 	}
 
