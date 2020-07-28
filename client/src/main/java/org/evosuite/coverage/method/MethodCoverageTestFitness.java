@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import org.evosuite.Properties;
+import org.evosuite.defectprediction.method.MethodPool;
 import org.evosuite.ga.archive.Archive;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testcase.TestFitnessFunction;
@@ -45,6 +46,8 @@ public class MethodCoverageTestFitness extends TestFitnessFunction {
     protected final String className;
     protected final String methodName;
 
+    private boolean buggy = true;
+
     /**
      * Constructor - fitness is specific to a method
      * @param className the class name
@@ -57,6 +60,14 @@ public class MethodCoverageTestFitness extends TestFitnessFunction {
         }
         this.className = className;
         this.methodName = methodName;
+
+        checkIfBuggy();
+    }
+
+    private void checkIfBuggy() {
+        if (Properties.DP_LEVEL == Properties.DefectPredictionLevel.METHOD) {
+            this.setBuggy(MethodPool.getInstance(className).isBuggy(className, methodName));
+        }
     }
 
     /**
@@ -203,4 +214,11 @@ public class MethodCoverageTestFitness extends TestFitnessFunction {
         return getMethod();
     }
 
+    public boolean isBuggy() {
+        return buggy;
+    }
+
+    public void setBuggy(boolean buggy) {
+        this.buggy = buggy;
+    }
 }

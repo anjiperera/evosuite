@@ -78,8 +78,18 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 	public MultiCriteriatManager(List<FitnessFunction<T>> fitnessFunctions) {
 		super(fitnessFunctions);
+
 		// initialize uncovered goals
 		uncoveredGoals.addAll(fitnessFunctions);
+		/*for (FitnessFunction<T> ff : fitnessFunctions) {
+			if (ff instanceof BranchCoverageTestFitness) {
+				if (((BranchCoverageTestFitness) ff).getNumTestCasesInZeroFront() > 0) {
+					uncoveredGoals.add(ff);
+				}
+			} else {
+				uncoveredGoals.add(ff);
+			}
+		}*/
 
 		// initialize the dependency graph among branches 
 		this.graph = getControlDepencies4Branches(fitnessFunctions);
@@ -129,6 +139,15 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 		// initialize current goals
 		this.currentGoals.addAll(graph.getRootBranches());
+		/*for (FitnessFunction<T> ff : graph.getRootBranches()) {
+			if (ff instanceof BranchCoverageTestFitness) {
+				if (((BranchCoverageTestFitness) ff).getNumTestCasesInZeroFront() > 0) {
+					currentGoals.add(ff);
+				}
+			} else {
+				currentGoals.add(ff);
+			}
+		}*/
 	}
 
 	@SuppressWarnings("unchecked")
@@ -491,8 +510,10 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 		List<BranchCoverageTestFitness> branches = new BranchCoverageFactory().getCoverageGoals();
 		for (BranchCoverageTestFitness branch : branches){
-			setOfBranches.add((FitnessFunction<T>) branch);
-			this.dependencies.put(branch, new LinkedHashSet<FitnessFunction<T>>());
+			if (branch.getNumTestCasesInZeroFront() > 0) {
+				setOfBranches.add((FitnessFunction<T>) branch);
+				this.dependencies.put(branch, new LinkedHashSet<FitnessFunction<T>>());
+			}
 		}
 
 		// initialize the maps

@@ -279,4 +279,16 @@ public class MethodPool {
 
         return 0.0;
     }
+
+    public boolean isBuggy(String className, String methodName) {
+        Method method = null;
+        try {
+            method = getMethodsByEvoFormatName(className + "." + methodName);
+            return method.getDefectScore() > 0 ? true : false;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return false;
+    }
 }

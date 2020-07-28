@@ -23,6 +23,10 @@ import org.evosuite.ClientProcess;
 import org.evosuite.Properties;
 import org.evosuite.Properties.Criterion;
 import org.evosuite.coverage.TestFitnessFactory;
+import org.evosuite.coverage.branch.BranchCoverageFactory;
+import org.evosuite.coverage.branch.BranchCoverageTestFitness;
+import org.evosuite.coverage.method.MethodCoverageFactory;
+import org.evosuite.coverage.method.MethodCoverageTestFitness;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
@@ -76,7 +80,30 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
 		List<TestFitnessFactory<? extends TestFitnessFunction>> goalFactories = getFitnessFactories();
 		List<TestFitnessFunction> fitnessFunctions = new ArrayList<TestFitnessFunction>();
         for (TestFitnessFactory<? extends TestFitnessFunction> goalFactory : goalFactories) {
-            fitnessFunctions.addAll(goalFactory.getCoverageGoals());
+
+        	if (goalFactory instanceof BranchCoverageFactory) {
+            	for (TestFitnessFunction ff : goalFactory.getCoverageGoals()) {
+            		if (ff instanceof BranchCoverageTestFitness) {
+            			if (((BranchCoverageTestFitness) ff).getNumTestCasesInZeroFront() > 0) {
+            				fitnessFunctions.add(ff);
+						}
+					} else {
+            			fitnessFunctions.add(ff);
+					}
+				}
+			} else if (goalFactory instanceof MethodCoverageFactory) {
+				for (TestFitnessFunction ff : goalFactory.getCoverageGoals()) {
+					if (ff instanceof MethodCoverageTestFitness) {
+						if (((MethodCoverageTestFitness) ff).isBuggy()) {
+							fitnessFunctions.add(ff);
+						}
+					} else {
+						fitnessFunctions.add(ff);
+					}
+				}
+			} else {
+        		fitnessFunctions.addAll(goalFactory.getCoverageGoals());
+			}
         }
 		algorithm.addFitnessFunctions((List)fitnessFunctions);
 
