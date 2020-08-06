@@ -19,11 +19,11 @@
  */
 package org.evosuite.ga.metaheuristics.mosa.structural;
 
+import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javafx.util.Pair;
 import org.evosuite.coverage.branch.Branch;
 import org.evosuite.coverage.branch.BranchCoverageGoal;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
@@ -87,10 +87,11 @@ public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<
 				graph.addEdge((FitnessFunction<T>) newfitness2, fitness);
 			}*/
 
-			Set<Pair<BasicBlock, ControlDependency>> visitedBlocks = new HashSet<>();
-			Set<Pair<BasicBlock, ControlDependency>> parents =
+			Set<Map.Entry<BasicBlock, ControlDependency>> visitedBlocks = new HashSet<>();
+			Set<Map.Entry<BasicBlock, ControlDependency>> parents =
 					lookForParentWithCd(branch.getInstruction().getBasicBlock(), rcfg, visitedBlocks);
-			for (Pair<BasicBlock, ControlDependency> bbCdPair : parents){
+
+			for (Map.Entry<BasicBlock, ControlDependency> bbCdPair : parents){
 				Branch newB = extractBranch(bbCdPair.getKey());
 				if (newB == null){
 					this.rootBranches.add(fitness);
@@ -129,17 +130,17 @@ public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<
 		return realParent;
 	}
 
-	public Set<Pair<BasicBlock, ControlDependency>> lookForParentWithCd(BasicBlock block,
+	public Set<Map.Entry<BasicBlock, ControlDependency>> lookForParentWithCd(BasicBlock block,
 																		ActualControlFlowGraph acfg,
-																		Set<Pair<BasicBlock, ControlDependency>>
+																		Set<Map.Entry<BasicBlock, ControlDependency>>
 																				visitedBlocks){
-		Set<Pair<BasicBlock, ControlDependency>> realParents = new HashSet<>();
-		Set<Pair<BasicBlock, ControlDependency>> parents = acfg.getParentsWithCd(block);
+		Set<Map.Entry<BasicBlock, ControlDependency>> realParents = new HashSet<>();
+		Set<Map.Entry<BasicBlock, ControlDependency>> parents = acfg.getParentsWithCd(block);
 		if (parents.size() == 0){
-			realParents.add(new Pair(block, null));
+			realParents.add(new AbstractMap.SimpleEntry(block, null));
 			return realParents;
 		}
-		for (Pair<BasicBlock, ControlDependency> bbCdPair : parents){
+		for (Map.Entry<BasicBlock, ControlDependency> bbCdPair : parents){
 			if (contains(bbCdPair, visitedBlocks)) {
 				continue;
 			}
@@ -153,17 +154,17 @@ public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<
 		return realParents;
 	}
 
-	private boolean contains(Pair<BasicBlock, ControlDependency> bbCdPair,
-							 Set<Pair<BasicBlock, ControlDependency>> visitedBlocks) {
+	private boolean contains(Map.Entry<BasicBlock, ControlDependency> bbCdPair,
+							 Set<Map.Entry<BasicBlock, ControlDependency>> visitedBlocks) {
 
 		if (bbCdPair.getValue() == null) {
-			for (Pair<BasicBlock, ControlDependency> visitedPair : visitedBlocks) {
+			for (Map.Entry<BasicBlock, ControlDependency> visitedPair : visitedBlocks) {
 				if (visitedPair.getKey().equals(bbCdPair.getKey()) && visitedPair.getValue() == null) {
 					return true;
 				}
 			}
 		} else {
-			for (Pair<BasicBlock, ControlDependency> visitedPair : visitedBlocks) {
+			for (Map.Entry<BasicBlock, ControlDependency> visitedPair : visitedBlocks) {
 				if (visitedPair.getKey().equals(bbCdPair.getKey()) && bbCdPair.getValue().equals(visitedPair.getValue())) {
 					return true;
 				}
