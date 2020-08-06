@@ -58,6 +58,8 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 	protected CrowdingDistance<T> distance = new CrowdingDistance<T>();
 
+	private long adjustGoalsOH = 0;
+
 	/**
 	 * Constructor based on the abstract class {@link AbstractMOSA}.
 	 * 
@@ -80,7 +82,11 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		// Ranking the union
 		logger.debug("Union Size = {}", union.size());
 
+		long adjustGoalsStartTime = System.nanoTime();
 		adjustCurrentGoals(false);
+		long adjustGoalEndTime = System.nanoTime();
+
+		this.adjustGoalsOH += adjustGoalEndTime - adjustGoalsStartTime;
 
 		// Ranking the union using the best rank algorithm (modified version of the non dominated sorting algorithm
 		this.rankingFunction.computeRankingAssignment(union, this.goalsManager.getCurrentGoals());
@@ -219,6 +225,8 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		}
 
 		adjustCurrentGoals(true);
+		LoggingUtils.getEvoLogger().info("Adjust Goals Overhead: {} ms",
+				(double) (this.adjustGoalsOH) / 1000000);
 
 		this.notifySearchFinished();
 	}

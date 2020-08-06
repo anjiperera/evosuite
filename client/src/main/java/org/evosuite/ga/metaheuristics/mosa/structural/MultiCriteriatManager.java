@@ -130,6 +130,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 		// initialize current goals
 		this.currentGoals.addAll(graph.getRootBranches());
 
+		long pathsCalculationStartTime = System.nanoTime();
 		for (FitnessFunction<T> rootBranch : graph.getRootBranches()) {
 			graph.getAllStructuralChildren(rootBranch, this.children);
 		}
@@ -143,7 +144,9 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 				this.numPaths.put(ff, calculateNumPaths(this.children.get(ff)));
 			}
 		}
-
+		long pathsCalculationEndTime = System.nanoTime();
+		LoggingUtils.getEvoLogger().info("Paths Calculation Overhead: {} ms",
+				(double) (pathsCalculationEndTime - pathsCalculationStartTime) / 1000000);
 	}
 
 	private Integer calculateNumPaths(Set<FitnessFunction<T>> childrenOf) {
