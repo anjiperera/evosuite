@@ -20,8 +20,10 @@
 package org.evosuite.ga.metaheuristics.mosa.structural;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import javafx.util.Pair;
 import org.evosuite.coverage.branch.Branch;
 import org.evosuite.coverage.branch.BranchCoverageGoal;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
@@ -30,6 +32,7 @@ import org.evosuite.ga.FitnessFunction;
 import org.evosuite.graphs.cfg.ActualControlFlowGraph;
 import org.evosuite.graphs.cfg.BasicBlock;
 import org.evosuite.graphs.cfg.BytecodeInstruction;
+import org.evosuite.graphs.cfg.ControlDependency;
 import org.jgrapht.graph.DefaultDirectedGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +69,7 @@ public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<
 				this.rootBranches.add(fitness); 
 			// see dependencies for all true/false branches
 			ActualControlFlowGraph rcfg = branch.getInstruction().getActualCFG();
-			Set<BasicBlock> visitedBlock = new HashSet<BasicBlock>();
+			/*Set<BasicBlock> visitedBlock = new HashSet<BasicBlock>();
 			Set<BasicBlock> parents = lookForParent(branch.getInstruction().getBasicBlock(), rcfg, visitedBlock);
 			for (BasicBlock bb : parents){
 				Branch newB = extractBranch(bb);
@@ -74,7 +77,7 @@ public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<
 					this.rootBranches.add(fitness);
 					continue;
 				}
-				
+
 				BranchCoverageGoal goal = new BranchCoverageGoal(newB, true, newB.getClassName(), newB.getMethodName());
 				BranchCoverageTestFitness newFitness = new BranchCoverageTestFitness(goal);
 				graph.addEdge((FitnessFunction<T>) newFitness, fitness);
@@ -82,6 +85,26 @@ public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<
 				BranchCoverageGoal goal2 = new BranchCoverageGoal(newB, false, newB.getClassName(), newB.getMethodName());
 				BranchCoverageTestFitness newfitness2 = new BranchCoverageTestFitness(goal2);
 				graph.addEdge((FitnessFunction<T>) newfitness2, fitness);
+			}*/
+
+			Set<Pair<BasicBlock, ControlDependency>> visitedBlocks = new HashSet<>();
+			Set<Pair<BasicBlock, ControlDependency>> parents =
+					lookForParentWithCd(branch.getInstruction().getBasicBlock(), rcfg, visitedBlocks);
+			for (Pair<BasicBlock, ControlDependency> bbCdPair : parents){
+				Branch newB = extractBranch(bbCdPair.getKey());
+				if (newB == null){
+					this.rootBranches.add(fitness);
+					continue;
+				}
+
+				if (bbCdPair.getValue() != null) {
+					BranchCoverageGoal goal = new BranchCoverageGoal(newB,
+							bbCdPair.getValue().getBranchExpressionValue(), newB.getClassName(), newB.getMethodName());
+					BranchCoverageTestFitness newFitness = new BranchCoverageTestFitness(goal);
+					graph.addEdge((FitnessFunction<T>) newFitness, fitness);
+				} else {
+					logger.error("No Control Dependency for Branch: {}", newB.toString());
+				}
 			}
 		}
 	}
@@ -104,6 +127,50 @@ public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<
 				realParent.addAll(lookForParent(bb, acfg, visitedBlock));
 		}
 		return realParent;
+	}
+
+	public Set<Pair<BasicBlock, ControlDependency>> lookForParentWithCd(BasicBlock block,
+																		ActualControlFlowGraph acfg,
+																		Set<Pair<BasicBlock, ControlDependency>>
+																				visitedBlocks){
+		Set<Pair<BasicBlock, ControlDependency>> realParents = new HashSet<>();
+		Set<Pair<BasicBlock, ControlDependency>> parents = acfg.getParentsWithCd(block);
+		if (parents.size() == 0){
+			realParents.add(new Pair(block, null));
+			return realParents;
+		}
+		for (Pair<BasicBlock, ControlDependency> bbCdPair : parents){
+			if (contains(bbCdPair, visitedBlocks)) {
+				continue;
+			}
+			visitedBlocks.add(bbCdPair);
+			if (containsBranches(bbCdPair.getKey())) {
+				realParents.add(bbCdPair);
+			} else {
+				realParents.addAll(lookForParentWithCd(bbCdPair.getKey(), acfg, visitedBlocks));
+			}
+		}
+		return realParents;
+	}
+
+	private boolean contains(Pair<BasicBlock, ControlDependency> bbCdPair,
+							 Set<Pair<BasicBlock, ControlDependency>> visitedBlocks) {
+
+		if (bbCdPair.getValue() == null) {
+			for (Pair<BasicBlock, ControlDependency> visitedPair : visitedBlocks) {
+				if (visitedPair.getKey().equals(bbCdPair.getKey()) && visitedPair.getValue() == null) {
+					return true;
+				}
+			}
+		} else {
+			for (Pair<BasicBlock, ControlDependency> visitedPair : visitedBlocks) {
+				if (visitedPair.getKey().equals(bbCdPair.getKey()) && bbCdPair.getValue().equals(visitedPair.getValue())) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -154,5 +221,20 @@ public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<
 			parents.add((FitnessFunction<T>) edge.getSource());
 		}
 		return parents;
+	}
+
+	public Set<FitnessFunction<T>> getAllStructuralChildren(FitnessFunction<T> parent,
+															Map<FitnessFunction<T>, Set<FitnessFunction<T>>> children) {
+		Set<FitnessFunction<T>> allChildren = new HashSet<>();
+
+		Set<FitnessFunction<T>> immediateChildren = getStructuralChildren(parent);
+
+		for (FitnessFunction<T> immediateChild :  immediateChildren) {
+			allChildren.add(immediateChild);
+			allChildren.addAll(getAllStructuralChildren(immediateChild, children));
+		}
+
+		children.putIfAbsent(parent, allChildren);
+		return allChildren;
 	}
 }

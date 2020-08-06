@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.evosuite.Properties;
+import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.FitnessFunction;
@@ -53,7 +54,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	private static final Logger logger = LoggerFactory.getLogger(DynaMOSA.class);
 
 	/** Manager to determine the test goals to consider at each generation */
-	protected StructuralGoalManager<T> goalsManager = null;
+	protected MultiCriteriatManager<T> goalsManager = null;
 
 	protected CrowdingDistance<T> distance = new CrowdingDistance<T>();
 
@@ -78,6 +79,8 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		// Ranking the union
 		logger.debug("Union Size = {}", union.size());
+
+		adjustCurrentGoals(false);
 
 		// Ranking the union using the best rank algorithm (modified version of the non dominated sorting algorithm
 		this.rankingFunction.computeRankingAssignment(union, this.goalsManager.getCurrentGoals());
@@ -128,6 +131,58 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		logger.debug("Uncovered goals = {}", goalsManager.getUncoveredGoals().size());
 	}
 
+	private void adjustCurrentGoals(boolean logInfo) {
+		for (int actualBranchId : this.goalsManager.getBranchCoverageTrueMap().keySet()) {
+			FitnessFunction ffTrue = this.goalsManager.getBranchCoverageTrueMap().get(actualBranchId);
+			FitnessFunction ffFalse = this.goalsManager.getBranchCoverageFalseMap().get(actualBranchId);
+
+			int numTestsTrueBranch = this.goalsManager.getNumTests(ffTrue.toString());
+			int numTestsFalseBranch = this.goalsManager.getNumTests(ffFalse.toString());
+
+			if (logInfo) {
+				LoggingUtils.getEvoLogger().info("Branch: {}, Number of Tests: {}, Num of Paths: {}", ffTrue.toString(),
+						numTestsTrueBranch, this.goalsManager.getNumPathsFor(ffTrue));
+				LoggingUtils.getEvoLogger().info("Branch: {}, Number of Tests: {}, Num of Paths: {}", ffFalse.toString(),
+						numTestsFalseBranch, this.goalsManager.getNumPathsFor(ffFalse));
+			}
+
+			if (numTestsTrueBranch == 0 && numTestsFalseBranch == 0) {
+				continue;
+			}
+
+			int numPathsTrueBranch = this.goalsManager.getNumPathsFor(ffTrue);
+			int numPathsFalseBranch = this.goalsManager.getNumPathsFor(ffFalse);
+
+			double testsPerPathTrueB = (double) numTestsTrueBranch / numPathsTrueBranch;
+			double testsPerPathFalseB = (double) numTestsFalseBranch / numPathsFalseBranch;
+
+			if (Double.compare(testsPerPathTrueB, testsPerPathFalseB) > 0) {
+				this.goalsManager.getCurrentGoals().remove(ffTrue);
+				this.goalsManager.getCurrentGoals().add(ffFalse);
+			} else if (Double.compare(testsPerPathTrueB, testsPerPathFalseB) < 0) {
+				this.goalsManager.getCurrentGoals().remove(ffFalse);
+				this.goalsManager.getCurrentGoals().add(ffTrue);
+			} else {
+				continue;
+			}
+
+			/*numTestsTrueBranch = numTestsTrueBranch == 0 ? 1 : numTestsTrueBranch;
+			numTestsFalseBranch = numTestsFalseBranch == 0 ? 1 : numTestsFalseBranch;
+
+			double scaleUpFactor = (double) numTestsTrueBranch / numTestsFalseBranch;
+			if (Double.compare(scaleUpFactor, 1.0) > 0) {	// True Branch has more tests
+				((BranchCoverageTestFitness) ffFalse).setNumTestCasesInZeroFront((int) Math.ceil(scaleUpFactor * 1));
+				// 1 - Default Num Test Cases in Zero Front
+				((BranchCoverageTestFitness) ffTrue).setNumTestCasesInZeroFront(0);
+			} else {	// False Branch has more tests
+				((BranchCoverageTestFitness) ffTrue).setNumTestCasesInZeroFront((int) Math.ceil(1 / scaleUpFactor));
+				// 1 - Default Num Test Cases in Zero Front
+				((BranchCoverageTestFitness) ffFalse).setNumTestCasesInZeroFront(0);
+			}*/
+
+		}
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -162,6 +217,8 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 			this.evolve();
 			this.notifyIteration();
 		}
+
+		adjustCurrentGoals(true);
 
 		this.notifySearchFinished();
 	}

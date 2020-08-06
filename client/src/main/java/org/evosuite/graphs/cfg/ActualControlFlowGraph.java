@@ -20,8 +20,10 @@
 package org.evosuite.graphs.cfg;
 
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
+import javafx.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -865,5 +867,31 @@ public class ActualControlFlowGraph extends ControlFlowGraph<BasicBlock> {
 	@Override
 	public String getCFGType() {
 		return "ACFG";
+	}
+
+	/**
+	 * <p>getParents</p>
+	 *
+	 * @param node a V object.
+	 * @return a {@link java.util.Set} object.
+	 */
+	public Set<Pair<BasicBlock, ControlDependency>> getParentsWithCd(BasicBlock node) {
+		if (!containsVertex(node)) // should this just return null?
+			throw new IllegalArgumentException(
+					"node not contained in this graph");
+		// TODO hash set? can't be sure V implements hash correctly
+
+		Set<Pair<BasicBlock, ControlDependency>> r = new LinkedHashSet<>();
+
+		for (ControlFlowEdge e : incomingEdgesOf(node)) {
+			r.add(new Pair(getEdgeSource(e), e.getControlDependency()));
+		}
+
+		// sanity check
+		if (r.size() != inDegreeOf(node))
+			throw new IllegalStateException(
+					"expect parent count and size of set of all parents of a graphs node to be equal");
+
+		return r;
 	}
 }

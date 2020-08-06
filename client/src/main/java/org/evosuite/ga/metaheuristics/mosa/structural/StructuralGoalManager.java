@@ -52,11 +52,15 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 	/** Map of test to archive and corresponding covered targets*/
 	protected Map<T, List<FitnessFunction<T>>> archive;
 
+	/** Map of fitness functions to archived tests **/
+	private Map<String, Set<T>> tests;
+
 	protected StructuralGoalManager(List<FitnessFunction<T>> fitnessFunctions){
 		uncoveredGoals = new HashSet<FitnessFunction<T>>(fitnessFunctions.size());
 		currentGoals = new HashSet<FitnessFunction<T>>(fitnessFunctions.size());
 		coveredGoals = new HashMap<FitnessFunction<T>, T>(fitnessFunctions.size());
 		archive = new HashMap<T, List<FitnessFunction<T>>>();
+		tests = new HashMap<>(fitnessFunctions.size());
 	}
 
 	/**
@@ -126,7 +130,27 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 			} else {
 				coveredTargets.add(f);
 			}
+
+			if (f instanceof BranchCoverageTestFitness) {
+				addTestTo(f, tc);
+			}
 		}
+	}
+
+	private void addTestTo(FitnessFunction<T> f, T tc) {
+		String ffName = f.toString();
+
+		if (tests.containsKey(ffName)) {
+			tests.get(ffName).add(tc);
+		} else {
+			Set<T> testsForFitnessFunction = new HashSet<>();
+			testsForFitnessFunction.add(tc);
+			tests.put(ffName, testsForFitnessFunction);
+		}
+	}
+
+	public int getNumTests(String ffName) {
+		return this.tests.containsKey(ffName) ? this.tests.get(ffName).size() : 0;
 	}
 
 	public Set<T> getArchive(){

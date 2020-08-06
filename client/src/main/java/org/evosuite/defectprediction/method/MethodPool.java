@@ -253,6 +253,7 @@ public class MethodPool {
             method = getMethodsByEvoFormatName(className + "." + methodName);
             int numTestCasesInZeroFront = (int) Math.ceil(((int) (method.getWeight() / this.defaultWeight)) / this.scaleDownFactor);
             return numTestCasesInZeroFront;
+            //return numTestCasesInZeroFront > 0 ? 1 : 0;
         } catch (Exception e) {
             e.printStackTrace();
         }
