@@ -225,14 +225,28 @@ public class BranchFitnessGraph<T extends Chromosome, V extends FitnessFunction<
 	}
 
 	public Set<FitnessFunction<T>> getAllStructuralChildren(FitnessFunction<T> parent,
-															Map<FitnessFunction<T>, Set<FitnessFunction<T>>> children) {
+															Map<FitnessFunction<T>, Set<FitnessFunction<T>>> children,
+															Set<FitnessFunction<T>> allParents) {
+		Set<FitnessFunction<T>> allParentsOfThisBranch = new HashSet<>();
+		allParentsOfThisBranch.addAll(allParents);
+
 		Set<FitnessFunction<T>> allChildren = new HashSet<>();
 
 		Set<FitnessFunction<T>> immediateChildren = getStructuralChildren(parent);
+		allParentsOfThisBranch.add(parent);
 
 		for (FitnessFunction<T> immediateChild :  immediateChildren) {
+			if (allParentsOfThisBranch.contains(immediateChild)) {
+				continue;
+			}
+
 			allChildren.add(immediateChild);
-			allChildren.addAll(getAllStructuralChildren(immediateChild, children));
+
+			if (children.containsKey(immediateChild)) {
+				allChildren.addAll(children.get(immediateChild));
+			} else {
+				allChildren.addAll(getAllStructuralChildren(immediateChild, children, allParentsOfThisBranch));
+			}
 		}
 
 		children.putIfAbsent(parent, allChildren);

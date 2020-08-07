@@ -132,13 +132,16 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 		long pathsCalculationStartTime = System.nanoTime();
 		for (FitnessFunction<T> rootBranch : graph.getRootBranches()) {
-			graph.getAllStructuralChildren(rootBranch, this.children);
+			Set<FitnessFunction<T>> allParents = new HashSet<>();
+			graph.getAllStructuralChildren(rootBranch, this.children, allParents);
 		}
 
 		for (FitnessFunction<T> ff : fitnessFunctions) {
 			if (ff instanceof BranchCoverageTestFitness) {
 				if (!this.children.containsKey(ff)) {
-					graph.getAllStructuralChildren(ff, this.children);
+					logger.error("Children not found for {}", ff.toString());
+					Set<FitnessFunction<T>> allParents = new HashSet<>();
+					graph.getAllStructuralChildren(ff, this.children, allParents);
 				}
 
 				this.numPaths.put(ff, calculateNumPaths(this.children.get(ff)));
@@ -150,9 +153,24 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	}
 
 	private Integer calculateNumPaths(Set<FitnessFunction<T>> childrenOf) {
+		Map<Branch, Integer> numChildren = new HashMap<>();
 		Set<Branch> cdNodes = new HashSet<>();
+
 		for (FitnessFunction<T> ff : childrenOf) {
-			cdNodes.add(((BranchCoverageTestFitness) ff).getBranch());
+			Branch branch = ((BranchCoverageTestFitness) ff).getBranch();
+			if (numChildren.containsKey(branch)) {
+				int numChildrenForB = numChildren.get(branch);
+				numChildrenForB++;
+				numChildren.put(branch, numChildrenForB);
+
+				if (numChildrenForB == 2) {
+					cdNodes.add(branch);
+				} else if (numChildrenForB > 2) {
+					logger.error("Unexpected number of children for {}", branch.toString());
+				}
+			} else {
+				numChildren.put(branch, 1);
+			}
 		}
 
 		return cdNodes.size() + 1;
