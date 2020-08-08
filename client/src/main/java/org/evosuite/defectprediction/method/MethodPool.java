@@ -36,6 +36,14 @@ public class MethodPool {
 
     public static MethodPool getInstance(String className) {
         if (!instanceMap.containsKey(className)) {
+            // since method coverage fitness function (MethodCoverageTestFitness) stores the inner-classes as individual
+            // classes, let's check if the instanceMap contains the outer-most class and return that
+            for (String instanceName : instanceMap.keySet()) {
+                if (className.startsWith(instanceName + ".") || className.startsWith(instanceName + "$")) { // className -> inner-class of instanceName
+                    return instanceMap.get(instanceName);
+                }
+            }
+
             instanceMap.put(className, new MethodPool(className));
         }
 
@@ -264,6 +272,16 @@ public class MethodPool {
     private Method getMethodsByEvoFormatName(String evoFormatName) throws Exception {
         if (this.equivalentMethodNames.containsKey(evoFormatName)) {
             return getMethod(this.equivalentMethodNames.get(evoFormatName));
+        }
+
+        // since method coverage fitness function (MethodCoverageTestFitness) stores the inner-classes as individual
+        // classes, let's check if the equivalentMethodNames contains the evoFormatName supplied in the format of
+        // MethodCoverageTestFitness (equivalentMethodNames -> package_name.outer_class$inner_class.method_name,
+        // evoFormatName sent by MethodCoverageTestFitness -> package_name.outer_class.inner_class.method_name)
+        for (String equivalentMethodName : this.equivalentMethodNames.keySet()) {
+            if (evoFormatName.equals(equivalentMethodName.replace('$', '.'))) {
+                return getMethod(this.equivalentMethodNames.get(equivalentMethodName));
+            }
         }
 
         throw new Exception("Method does not exist in the MethodPool: " + evoFormatName);
