@@ -92,6 +92,11 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		// Obtain the next front
 		front = this.rankingFunction.getSubfront(index);
 
+		if (front.isEmpty()) {	// zero front is empty
+			index++;
+			front = this.rankingFunction.getSubfront(index);
+		}
+
 		while ((remain > 0) && (remain >= front.size()) && !front.isEmpty()) {
 			// Assign crowding distance to individuals
 			this.distance.fastEpsilonDominanceAssignment(front, this.goalsManager.getCurrentGoals());
