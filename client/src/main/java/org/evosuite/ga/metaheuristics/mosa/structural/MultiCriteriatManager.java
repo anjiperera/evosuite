@@ -68,6 +68,8 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 	protected Map<BranchCoverageTestFitness, Set<FitnessFunction<T>>> dependencies;
 
+	private Set<MethodCoverageTestFitness> methods;
+
 	private Map<FitnessFunction<T>, Integer> numPaths = new LinkedHashMap<>();
 	private Map<FitnessFunction<T>, Set<FitnessFunction<T>>> children = new LinkedHashMap<>();
 
@@ -83,6 +85,8 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 		// initialize the dependency graph among branches 
 		this.graph = getControlDepencies4Branches(fitnessFunctions);
+
+		this.methods = getMethods(fitnessFunctions);
 
 		// initialize the dependency graph between branches and other coverage targets (e.g., statements)
 		// let's derive the dependency graph between branches and other coverage targets (e.g., statements)
@@ -150,6 +154,17 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 		long pathsCalculationEndTime = System.nanoTime();
 		LoggingUtils.getEvoLogger().info("Paths Calculation Overhead: {} ms",
 				(double) (pathsCalculationEndTime - pathsCalculationStartTime) / 1000000);
+	}
+
+	private Set<MethodCoverageTestFitness> getMethods(List<FitnessFunction<T>> fitnessFunctions) {
+		Set<MethodCoverageTestFitness> methods = new HashSet<>();
+		for (FitnessFunction<T> ff : fitnessFunctions) {
+			if (ff instanceof MethodCoverageTestFitness) {
+				methods.add((MethodCoverageTestFitness) ff);
+			}
+		}
+
+		return methods;
 	}
 
 	private Integer calculateNumPaths(Set<FitnessFunction<T>> childrenOf) {
@@ -420,6 +435,8 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 			return;
 		}
 
+		Set<MethodCoverageTestFitness> visitedMethods = new HashSet<>();
+
 		// 1) we update the set of currents goals
 		Set<FitnessFunction<T>> visitedTargets = new LinkedHashSet<FitnessFunction<T>>(uncoveredGoals.size()*2);
 		LinkedList<FitnessFunction<T>> targets = new LinkedList<FitnessFunction<T>>();
@@ -435,6 +452,10 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 			double value = fitnessFunction.getFitness(c);
 			if (value == 0.0) {
+				if (fitnessFunction instanceof MethodCoverageTestFitness) {
+					visitedMethods.add((MethodCoverageTestFitness) fitnessFunction);
+				}
+
 				updateCoveredGoals(fitnessFunction, c);
 				if (fitnessFunction instanceof BranchCoverageTestFitness){
 					for (FitnessFunction<T> child : graph.getStructuralChildren(fitnessFunction)){
@@ -485,6 +506,18 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 				}
 			}
 		}
+
+		if (ArrayUtil.contains(Properties.CRITERION, METHOD)){
+			for (MethodCoverageTestFitness methodFf : this.methods) {
+				if (!visitedMethods.contains(methodFf)) {
+					double value = ((FitnessFunction) methodFf).getFitness(c);
+					if (value == 0.0) {
+						updateCoveredGoals((FitnessFunction) methodFf, c);
+					}
+				}
+			}
+		}
+
 	}
 
 	/**
