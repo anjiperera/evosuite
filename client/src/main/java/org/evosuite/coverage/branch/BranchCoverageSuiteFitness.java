@@ -19,15 +19,13 @@
  */
 package org.evosuite.coverage.branch;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
+
 import org.evosuite.Properties;
 import org.evosuite.TestGenerationContext;
 import org.evosuite.ga.archive.Archive;
@@ -40,6 +38,7 @@ import org.evosuite.testcase.statements.ConstructorStatement;
 import org.evosuite.testcase.statements.Statement;
 import org.evosuite.testsuite.AbstractTestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteFitnessFunction;
+import org.evosuite.utils.FileIOUtils;
 import org.evosuite.utils.LoggingUtils;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
@@ -570,8 +569,20 @@ public class BranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 	public void calculateTotalNumTestCasesInZeroFront() {
 		int totalNumTestCasesInZeroFront = 0;
 
+		Map<String, Boolean> methods = new HashMap<>();
+
 		for (TestFitnessFunction testFit : branchCoverageTrueMap.values()) {
 			totalNumTestCasesInZeroFront += ((BranchCoverageTestFitness) testFit).getNumTestCasesInZeroFront();
+
+			String fqMethodName = ((BranchCoverageTestFitness) testFit).getClassName() + "." +
+					((BranchCoverageTestFitness) testFit).getMethod();
+			if (!methods.containsKey(fqMethodName)) {
+				if (((BranchCoverageTestFitness) testFit).getNumTestCasesInZeroFront() > 0) {
+					methods.put(fqMethodName, Boolean.TRUE);
+				} else {
+					methods.put(fqMethodName, Boolean.FALSE);
+				}
+			}
 		}
 
 		for (TestFitnessFunction testFit : branchCoverageFalseMap.values()) {
@@ -580,7 +591,51 @@ public class BranchCoverageSuiteFitness extends TestSuiteFitnessFunction {
 
 		for (TestFitnessFunction testFit : branchlessMethodCoverageMap.values()) {
 			totalNumTestCasesInZeroFront += ((BranchCoverageTestFitness) testFit).getNumTestCasesInZeroFront();
+
+			String fqMethodName = ((BranchCoverageTestFitness) testFit).getClassName() + "." +
+					((BranchCoverageTestFitness) testFit).getMethod();
+			if (!methods.containsKey(fqMethodName)) {
+				if (((BranchCoverageTestFitness) testFit).getNumTestCasesInZeroFront() > 0) {
+					methods.put(fqMethodName, Boolean.TRUE);
+				} else {
+					methods.put(fqMethodName, Boolean.FALSE);
+				}
+			}
 		}
+
+		String NEWLINE = java.lang.System.getProperty("line.separator");
+
+		StringBuilder builderBuggyMethods = new StringBuilder();
+		StringBuilder builderNonBuggyMethods = new StringBuilder();
+
+		for (String fqMethodName : methods.keySet()) {
+			boolean ignore = false;
+
+			if (fqMethodName.contains("$")) {
+				for (int index = 0; index < fqMethodName.length(); index++) {
+					if (fqMethodName.charAt(index) == '$') {
+						if (Character.isDigit(fqMethodName.charAt(index + 1))) {
+							ignore = true;
+							break;
+						}
+					}
+				}
+			}
+
+			if(!ignore) {
+				if(methods.get(fqMethodName)) {
+					builderBuggyMethods.append(fqMethodName + NEWLINE);
+				} else {
+					builderNonBuggyMethods.append(fqMethodName + NEWLINE);
+				}
+			}
+		}
+
+		File fileBuggyMethods = new File(Properties.REPORT_DIR + File.separator + "buggy_methods.csv");
+		File fileNonBuggyMethods = new File(Properties.REPORT_DIR + File.separator + "non_buggy_methods.csv");
+
+		FileIOUtils.writeFile(builderBuggyMethods.toString(), fileBuggyMethods);
+		FileIOUtils.writeFile(builderNonBuggyMethods.toString(), fileNonBuggyMethods);
 
 		LoggingUtils.getEvoLogger().info("* Total Number of Test Cases in Zero Front: " + totalNumTestCasesInZeroFront);
 	}
