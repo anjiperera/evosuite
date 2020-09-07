@@ -230,29 +230,6 @@ public class MethodPool {
         return parameters;
     }
 
-    public void calculateNumTestCasesInZeroFront(BranchCoverageSuiteFitness suiteFit) {
-        for (Method method : getMethods()) {
-            int numTestCasesInZeroFront = (int) (method.getWeight() / this.defaultWeight);
-            /*List<Branch> branches = branchPool.getBranchesFor(className, method.getEvoFormatName());
-            if (!branches.isEmpty()) {
-                for (Branch branch : branches) {
-                    suiteFit.setNumTestCasesInZeroFrontFor(branch.getActualBranchId(), numTestCasesInZeroFront);
-                }
-            } else {    // branchless method
-                suiteFit.setNumTestCasesInZeroFrontFor(className + "." + method.getEvoFormatName(), numTestCasesInZeroFront);
-            }*/
-
-            List<Integer> branchIds = method.getBranchIds();
-            if (!branchIds.isEmpty()) {
-                for (Integer branchId : branchIds) {
-                    suiteFit.setNumTestCasesInZeroFrontFor(branchId, numTestCasesInZeroFront);
-                }
-            } else {    // branchless method
-                suiteFit.setNumTestCasesInZeroFrontFor(className + "." + method.getEvoFormatName(), numTestCasesInZeroFront);
-            }
-        }
-    }
-
     public int calculateNumTestCasesInZeroFront(String className, String methodName) {
         Method method = null;
         try {
