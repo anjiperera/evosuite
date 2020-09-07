@@ -55,9 +55,6 @@ public class MethodPool {
             return methods.get(fqMethodName);
         } else {
             throw new Exception("The method does not exist in the Method Pool (defect scores): " + fqMethodName);
-            // LoggingUtils.getEvoLogger().error("The method does not exist in the Method Pool (defect scores): " +
-            //         fqMethodName);
-            // return null;
         }
     }
 
@@ -71,7 +68,6 @@ public class MethodPool {
             String fqConvertedMethodName = methodEvoFormat;
             if (Properties.DP_INPUT_FORMAT == Properties.MethodSignatureFormat.OWN_1) {
                 fqConvertedMethodName = MethodUtils.convertMethodName(methodEvoFormat, className);
-                //String fqConvertedMethodName = className + ":" + convertedMethodName;
             }
 
             Method method = null;
@@ -81,7 +77,6 @@ public class MethodPool {
                 e.printStackTrace();
             }
             if (method != null) {
-                // int branchCount = branchPool.getBranchCountOfBothTypes(className, methodEvoFormat);
                 if (branchCount == 0) {
                     LoggingUtils.getEvoLogger().error("Branch count is zero for the method: " + fqConvertedMethodName);
                 }
@@ -107,8 +102,6 @@ public class MethodPool {
 
         for (Method method : getMethods()) {
             method.normalizeDefectScore(sumDefectScores);
-            // normSumDefectScores += method.getNormDefectScore() * method.getNumBranches();
-            // totalNumBranches += method.getNumBranches();
 
             normSumDefectScores += method.getNormDefectScore();
             totalNumBranches += 1;
@@ -121,7 +114,6 @@ public class MethodPool {
         double sumDefectScores = 0.0;
 
         for (Method method : getMethods()) {
-            // sumDefectScores += method.getNumBranches() * method.getDefectScore();
             sumDefectScores += method.getDefectScore();
         }
 

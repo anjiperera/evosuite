@@ -100,10 +100,6 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 			if (criterion == Properties.Criterion.BRANCH) {
 				((BranchCoverageSuiteFitness) suiteFit).calculateTotalNumTestCasesInZeroFront();
 			}
-
-			/*if (criterion == Properties.Criterion.BRANCH) {
-				MethodPool.getInstance(Properties.TARGET_CLASS).calculateNumTestCasesInZeroFront((BranchCoverageSuiteFitness) suiteFit);
-			}*/
 		}
 
 		this.budgetMonitor = new BudgetConsumptionMonitor();
