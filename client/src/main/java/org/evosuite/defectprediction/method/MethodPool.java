@@ -68,8 +68,11 @@ public class MethodPool {
             int branchCount = branchPool.getBranchCountOfBothTypes(className, methodEvoFormat);
             totalNumBranches += branchCount;
 
-            String fqConvertedMethodName = MethodUtils.convertMethodName(methodEvoFormat, className);
-            //String fqConvertedMethodName = className + ":" + convertedMethodName;
+            String fqConvertedMethodName = methodEvoFormat;
+            if (Properties.DP_INPUT_FORMAT == Properties.MethodSignatureFormat.OWN_1) {
+                fqConvertedMethodName = MethodUtils.convertMethodName(methodEvoFormat, className);
+                //String fqConvertedMethodName = className + ":" + convertedMethodName;
+            }
 
             Method method = null;
             try {
@@ -153,7 +156,10 @@ public class MethodPool {
                 String[] cells = row.split(",");
 
                 String fqMethodName = cells[0];
-                fqMethodName = getFormattedFqMethodName(fqMethodName);
+
+                if (Properties.DP_INPUT_FORMAT == Properties.MethodSignatureFormat.OWN_1) {
+                    fqMethodName = getFormattedFqMethodName(fqMethodName);
+                }
 
                 methodsInFile.put(fqMethodName, new Method(fqMethodName, Double.parseDouble(cells[1])));
             }

@@ -1289,6 +1289,13 @@ public class Properties {
 	@Parameter(key = "defect_prediction_dir", description = "Directory in which defect scores are stored")
 	public static String DP_DIR = "defect-predictions";
 
+	@Parameter(key = "dp_input_format", description = "Format of the method signatures")
+	public static MethodSignatureFormat DP_INPUT_FORMAT = MethodSignatureFormat.OWN_1;
+
+	public enum MethodSignatureFormat {
+		JVM, OWN_1
+	}
+
 	// ---------------------------------------------------------------
 	// Contracts / Asserts:
 	@Parameter(key = "check_contracts", description = "Check contracts during test execution")
