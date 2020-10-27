@@ -52,6 +52,7 @@ import org.evosuite.ga.operators.selection.SelectionFunction;
 import org.evosuite.ga.populationlimit.IndividualPopulationLimit;
 import org.evosuite.ga.populationlimit.PopulationLimit;
 import org.evosuite.ga.stoppingconditions.MaxGenerationStoppingCondition;
+import org.evosuite.ga.stoppingconditions.MaxTimeStoppingCondition;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
 import org.evosuite.symbolic.DSEStats;
 import org.evosuite.testcase.execution.ExecutionTracer;
@@ -1174,6 +1175,17 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 		}
 
 		return (double) currentbudget / (double) totalbudget;
+	}
+
+	protected long getCurrentTime() {
+		for (StoppingCondition c : stoppingConditions) {
+			if (c instanceof MaxTimeStoppingCondition) {
+				long currentTimeMillis = ((MaxTimeStoppingCondition) c).getCurrentTimeMillis();
+				return currentTimeMillis;
+			}
+		}
+
+		return 0;
 	}
 
 	/*

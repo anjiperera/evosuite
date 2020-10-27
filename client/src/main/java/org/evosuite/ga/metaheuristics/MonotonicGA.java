@@ -127,10 +127,10 @@ public class MonotonicGA<T extends Chromosome> extends GeneticAlgorithm<T> {
 			offspring2.mutate();
 
 			if (offspring1.isChanged()) {
-				offspring1.updateAge(currentIteration);
+				offspring1.updateAge(currentIteration, this.getCurrentTime());
 			}
 			if (offspring2.isChanged()) {
-				offspring2.updateAge(currentIteration);
+				offspring2.updateAge(currentIteration, this.getCurrentTime());
 			}
 
 			// The two offspring replace the parents if and only if one of

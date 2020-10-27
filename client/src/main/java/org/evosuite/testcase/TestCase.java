@@ -515,5 +515,9 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 	 * @param exceptions a {@link java.util.Map} object.
 	 */
 	public String toCode(Map<Integer, Throwable> exceptions);
+
+	public void setTimeTaken(long timeTaken);
+
+	public long getTimeTaken();
 	
 }

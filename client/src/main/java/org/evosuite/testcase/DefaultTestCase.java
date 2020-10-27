@@ -89,6 +89,8 @@ public class DefaultTestCase implements TestCase, Serializable {
 
 	private int id;
 
+	private long timeTaken;
+
 	/**
 	 * Constructor
 	 */
@@ -1202,6 +1204,16 @@ public class DefaultTestCase implements TestCase, Serializable {
 		visitor.setExceptions(exceptions);
 		accept(visitor);
 		return visitor.getCode();
+	}
+
+	@Override
+	public void setTimeTaken(long timeTaken) {
+		this.timeTaken = timeTaken;
+	}
+
+	@Override
+	public long getTimeTaken() {
+		return this.timeTaken;
 	}
 
 	/* (non-Javadoc)

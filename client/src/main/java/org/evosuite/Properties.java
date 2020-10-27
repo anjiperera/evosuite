@@ -1118,6 +1118,9 @@ public class Properties {
 	@Parameter(key = "test_naming_strategy", group = "Output", description = "What strategy to use to derive names for tests")
 	public static TestNamingStrategy TEST_NAMING_STRATEGY = TestNamingStrategy.NUMBERED;
 
+	@Parameter(key = "log_time_taken", group = "Output", description = "Log time taken to generate test case")
+	public static boolean LOG_TIME_TAKEN = false;
+
 	// ---------------------------------------------------------------
 	// Sandbox
 	@Parameter(key = "sandbox", group = "Sandbox", description = "Execute tests in a sandbox environment")
