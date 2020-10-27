@@ -88,7 +88,7 @@ public class MuPlusLambdaEA<T extends Chromosome> extends AbstractMuLambda<T> {
         offsprings.remove(bestOffspring);
       }
 
-      this.population.get(i).updateAge(this.currentIteration);
+      this.population.get(i).updateAge(this.currentIteration, this.getCurrentTime());
     }
     assert this.population.size() == this.mu;
 

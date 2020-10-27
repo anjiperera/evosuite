@@ -89,6 +89,11 @@ public class MaxTimeStoppingCondition extends StoppingConditionImpl {
 		return (currentTime - startTime) / 1000;
 	}
 
+	public long getCurrentTimeMillis() {
+		long currentTime = System.currentTimeMillis();
+		return (currentTime - startTime);
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public void forceCurrentValue(long value) {

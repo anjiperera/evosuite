@@ -73,6 +73,9 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
 	/** Generation in which this chromosome was created */
 	protected int age = 0;
 
+	/** Time taken to generate this chromosome **/
+	protected long timeTaken = 0;
+
 	/** */
 	protected int rank = -1;
 
@@ -498,8 +501,14 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
 		this.numsCoveredGoals.put(ff, numCoveredGoals);
 	}
 
-	public void updateAge(int generation) {
+	public void updateAge(int generation, long currentTime) {
 		this.age = generation;
+		this.timeTaken = currentTime;
+		this.updateTimeTaken();
+	}
+
+	protected void updateTimeTaken(){
+		return;
 	}
 
 	public int getAge() {

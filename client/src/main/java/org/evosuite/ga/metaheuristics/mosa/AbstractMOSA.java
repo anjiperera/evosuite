@@ -142,7 +142,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 			this.mutate(offspring1, parent1);
 			if (offspring1.isChanged()) {
 				this.clearCachedResults(offspring1);
-				offspring1.updateAge(this.currentIteration);
+				offspring1.updateAge(this.currentIteration, this.getCurrentTime());
 				this.calculateFitness(offspring1);
 				offspringPopulation.add(offspring1);
 			}
@@ -151,7 +151,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 			this.mutate(offspring2, parent2);
 			if (offspring2.isChanged()) {
 				this.clearCachedResults(offspring2);
-				offspring2.updateAge(this.currentIteration);
+				offspring2.updateAge(this.currentIteration, this.getCurrentTime());
 				this.calculateFitness(offspring2);
 				offspringPopulation.add(offspring2);
 			}
@@ -167,7 +167,7 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 				tch.mutate(); tch.mutate(); // TODO why is it mutated twice?
 			}
 			if (tch.isChanged()) {
-				tch.updateAge(this.currentIteration);
+				tch.updateAge(this.currentIteration, this.getCurrentTime());
 				this.calculateFitness(tch);
 				offspringPopulation.add(tch);
 			}

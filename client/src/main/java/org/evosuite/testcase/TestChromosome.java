@@ -707,6 +707,12 @@ public class TestChromosome extends ExecutableChromosome {
 		}
 		return c;
 	}
+
+	@Override
+	protected void updateTimeTaken(){
+		test.setTimeTaken(this.timeTaken);
+	}
+
 	/**
 	 * Add an additional secondary objective to the end of the list of
 	 * objectives

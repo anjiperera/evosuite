@@ -149,10 +149,10 @@ public class LIPS <T extends Chromosome> extends GeneticAlgorithm<T>{
 				newGeneration.add(offspring2);
 
 				if(offspring1.isChanged()) {
-					offspring1.updateAge(currentIteration);
+					offspring1.updateAge(currentIteration, this.getCurrentTime());
 				}
 				if(offspring2.isChanged()) {
-					offspring2.updateAge(currentIteration);
+					offspring2.updateAge(currentIteration, this.getCurrentTime());
 				}
 			} catch (ConstructionFailedException e) {
 				logger.info("CrossOver/Mutation failed.");
