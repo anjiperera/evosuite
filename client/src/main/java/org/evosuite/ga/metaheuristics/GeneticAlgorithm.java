@@ -417,6 +417,7 @@ public abstract class GeneticAlgorithm<T extends Chromosome> implements SearchAl
 		logger.debug("Creating random population");
 		for (int i = 0; i < population_size; i++) {
 			T individual = chromosomeFactory.getChromosome();
+			individual.updateAge(this.currentIteration, this.getCurrentTime());
 			for (FitnessFunction<?> fitnessFunction : this.fitnessFunctions) {
 				individual.addFitness(fitnessFunction);
 			}
