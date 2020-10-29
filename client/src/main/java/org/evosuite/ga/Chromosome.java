@@ -73,8 +73,8 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
 	/** Generation in which this chromosome was created */
 	protected int age = 0;
 
-	/** Time taken to generate this chromosome **/
-	protected long timeTaken = 0;
+	/** Time taken to generate this chromosome (milliseconds) **/
+	protected long timeTaken = -1000;
 
 	/** */
 	protected int rank = -1;
