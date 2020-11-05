@@ -1108,6 +1108,10 @@ public class Properties {
 	@Parameter(key = "output_granularity", group = "Output", description = "Write all test cases for a class into a single file or to separate files.")
 	public static OutputGranularity OUTPUT_GRANULARITY = OutputGranularity.MERGED;
 
+	@Parameter(key = "num_test_files", group = "Output", description = "Divide the total test cases into the number of" +
+			" test files specified (only to be used with output_granularity = MERGED).")
+	public static int NUM_TEST_FILES = 1;
+
 	@Parameter(key = "max_coverage_depth", group = "Output", description = "Maximum depth in the calltree to count a branch as covered")
 	public static int MAX_COVERAGE_DEPTH = -1;
 
