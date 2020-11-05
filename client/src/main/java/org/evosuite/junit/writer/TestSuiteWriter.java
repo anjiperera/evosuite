@@ -263,14 +263,30 @@ public class TestSuiteWriter implements Opcodes {
         }
 
         if (Properties.OUTPUT_GRANULARITY == OutputGranularity.MERGED || testCases.size() == 0) {
-            File file = new File(dir + "/" + name + ".java");
-            //executor.newObservers();
+            if (Properties.NUM_TEST_FILES == 1 || testCases.size() < Properties.NUM_TEST_FILES) {
+                File file = new File(dir + "/" + name + ".java");
+                //executor.newObservers();
 
-            //content = getUnitTestsAllInSameFile(name, results)
-            content.append(getUnitTestsAllInSameFile(name, results));
+                //content = getUnitTestsAllInSameFile(name, results);
+                content.append(getUnitTestsAllInSameFile(name, results));
 
-            FileIOUtils.writeFile(content.toString(), file);
-            generated.add(file);
+                FileIOUtils.writeFile(content.toString(), file);
+                generated.add(file);
+            } else {
+                for (int fileIndex = 0; fileIndex < Properties.NUM_TEST_FILES; fileIndex++) {
+                    File file = new File(dir + "/" + name + "_" + fileIndex + ".java");
+                    //executor.newObservers();
+
+                    //content = getUnitTestsAllInSameFile(name, results);
+                    // content.append(getUnitTestsAllInSameFile(name, results));
+
+                    StringBuilder testCodeBuilder = getUnitTestsAllInSameFile(name, fileIndex, results);
+                    content.append(testCodeBuilder);
+
+                    FileIOUtils.writeFile(testCodeBuilder.toString(), file);
+                    generated.add(file);
+                }
+            }
         } else {
             for (int i = 0; i < testCases.size(); i++) {
                 File file = new File(dir + "/" + name + "_" + i + ".java"); // e.g., dir/Foo_ESTest_0.java
@@ -375,6 +391,57 @@ public class TestSuiteWriter implements Opcodes {
         	for (int i = 0; i < testCases.size(); i++) {
         		 builder.append(testToString(i, i, results.get(i)));
         	}
+        }
+        builder.append(getFooter());
+
+        //return builder.toString();
+        return builder;
+    }
+
+
+    /**
+     * Create JUnit file for given class name
+     *
+     * @param name Name of the class file
+     * @return String representation of JUnit test file
+     */
+    private StringBuilder getUnitTestsAllInSameFile(String name, int fileIndex, List<ExecutionResult> results) {
+
+        int testIdEnd = 0;
+        int testIdsInOneFile = (int) Math.floor((double) testCases.size() / Properties.NUM_TEST_FILES);
+        int testIdStart = fileIndex * testIdsInOneFile;
+        if (fileIndex == Properties.NUM_TEST_FILES - 1) {
+            testIdEnd = testCases.size() - 1;
+        }
+        else {
+            testIdEnd = testIdStart + testIdsInOneFile - 1;
+        }
+
+        List<ExecutionResult> resultsForGetHeader = new ArrayList<>();
+        for (int testId = testIdStart; testId <= testIdEnd; testId++) {
+            resultsForGetHeader.add(results.get(testId));
+        }
+
+        /*
+         * if there was any security exception, then we need to scaffold the
+         * test cases with a sandbox
+         */
+        boolean wasSecurityException = TestSuiteWriterUtils.hasAnySecurityException(resultsForGetHeader);
+
+        StringBuilder builder = new StringBuilder(52428800);    //reserving 50MB as this stores the whole test suite
+
+        builder.append(getHeader(name + "_" + fileIndex, name, resultsForGetHeader));
+
+        if (!Properties.TEST_SCAFFOLDING && !Properties.NO_RUNTIME_DEPENDENCY) {
+            builder.append(new Scaffolding().getBeforeAndAfterMethods(name + "_" + fileIndex, wasSecurityException, results));
+        }
+
+        if(testCases.isEmpty()) {
+            builder.append(getEmptyTest());
+        } else {
+            for (int testId = testIdStart; testId <= testIdEnd; testId++) {
+                builder.append(testToString(testId, testId, results.get(testId)));
+            }
         }
         builder.append(getFooter());
 
