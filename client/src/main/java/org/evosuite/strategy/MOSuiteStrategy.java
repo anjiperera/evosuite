@@ -86,6 +86,8 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
             		if (ff instanceof BranchCoverageTestFitness) {
             			if (((BranchCoverageTestFitness) ff).getNumTestCasesInZeroFront() > 0) {
             				fitnessFunctions.add(ff);
+						} else {
+							fitnessFunctions.add(ff);
 						}
 					} else {
             			fitnessFunctions.add(ff);
@@ -95,6 +97,8 @@ public class MOSuiteStrategy extends TestGenerationStrategy {
 				for (TestFitnessFunction ff : goalFactory.getCoverageGoals()) {
 					if (ff instanceof MethodCoverageTestFitness) {
 						if (((MethodCoverageTestFitness) ff).isBuggy()) {
+							fitnessFunctions.add(ff);
+						} else {
 							fitnessFunctions.add(ff);
 						}
 					} else {

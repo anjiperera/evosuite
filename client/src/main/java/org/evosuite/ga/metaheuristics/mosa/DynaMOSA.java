@@ -60,6 +60,10 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 	private long adjustGoalsOH = 0;
 
+	private int currentIterationsWoImprovements = 0;
+	private int currentUncoveredGoals = 0;
+	private boolean triggerFired = false;
+
 	/**
 	 * Constructor based on the abstract class {@link AbstractMOSA}.
 	 * 
@@ -136,6 +140,47 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		this.currentIteration++;
 
+		if (!triggerFired) {
+			if (goalsManager.getUncoveredGoals().size() == 0) {
+				// trigger point to include non-buggy goals
+				this.triggerFired = true;
+				goalsManager.updateCurrentGoals();
+				goalsManager.updateUncoveredGoals();
+				goalsManager.updateMethods();
+				goalsManager.updateBranchCoverageMaps();
+
+				LoggingUtils.getEvoLogger().info(
+						"Trigger to include non-buggy goals fired at {} seconds after {} generations",
+						(int) (this.getCurrentTime() / 1000), this.currentIteration);
+				LoggingUtils.getEvoLogger().info("Trigger cause: All buggy goals are covered");
+			}
+		}
+
+		if (!triggerFired) {
+			if (goalsManager.getUncoveredGoals().size() == this.currentUncoveredGoals) {
+				this.currentIterationsWoImprovements++;
+			} else {
+				this.currentUncoveredGoals = goalsManager.getUncoveredGoals().size();
+				this.currentIterationsWoImprovements = 0;
+			}
+
+			if (this.currentIterationsWoImprovements >= Properties.ITERATIONS_WO_IMPROVEMENT) {
+				// trigger point to include non-buggy goals
+				this.triggerFired = true;
+				goalsManager.updateCurrentGoals();
+				goalsManager.updateUncoveredGoals();
+				goalsManager.updateMethods();
+				goalsManager.updateBranchCoverageMaps();
+
+				LoggingUtils.getEvoLogger().info(
+						"Trigger to include non-buggy goals fired at {} seconds after {} generations",
+						(int) (this.getCurrentTime() / 1000), this.currentIteration);
+				LoggingUtils.getEvoLogger().info(
+						"Trigger cause: Buggy goals coverage is not improved for {} generations",
+						this.currentIterationsWoImprovements);
+			}
+		}
+
 		logger.debug("Covered goals = {}", goalsManager.getCoveredGoals().size());
 		logger.debug("Current goals = {}", goalsManager.getCurrentGoals().size());
 		logger.debug("Uncovered goals = {}", goalsManager.getUncoveredGoals().size());
@@ -202,6 +247,20 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		this.goalsManager = new MultiCriteriatManager<T>(this.fitnessFunctions);
 
+		if (this.goalsManager.getCurrentGoals().size() == 0) {
+			// trigger point to include non-buggy goals
+			this.triggerFired = true;
+			goalsManager.updateCurrentGoals();
+			goalsManager.updateUncoveredGoals();
+			goalsManager.updateMethods();
+			goalsManager.updateBranchCoverageMaps();
+
+			LoggingUtils.getEvoLogger().info(
+					"Trigger to include non-buggy goals fired at {} seconds after {} generations",
+					(int) (this.getCurrentTime() / 1000), this.currentIteration);
+			LoggingUtils.getEvoLogger().info("Trigger cause: No buggy goals");
+		}
+
 		LoggingUtils.getEvoLogger().info("* Initial Number of Goals in DynMOSA = " +
 				this.goalsManager.getCurrentGoals().size() +" / "+ this.getUncoveredGoals().size());
 
@@ -221,6 +280,8 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		for (int i = 0; i < this.rankingFunction.getNumberOfSubfronts(); i++){
 			this.distance.fastEpsilonDominanceAssignment(this.rankingFunction.getSubfront(i), this.goalsManager.getCurrentGoals());
 		}
+
+		this.currentUncoveredGoals = goalsManager.getUncoveredGoals().size();
 
 		// next generations
 		while (!isFinished() /*&& this.goalsManager.getUncoveredGoals().size() > 0*/) {

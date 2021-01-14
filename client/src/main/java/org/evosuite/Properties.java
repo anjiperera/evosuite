@@ -1303,6 +1303,9 @@ public class Properties {
 		JVM, OWN_1
 	}
 
+	@Parameter(key = "iterations_without_improvement", description = "Number of iterations without improvement in buggy goals coverage")
+	public static int ITERATIONS_WO_IMPROVEMENT = 5;
+
 	// ---------------------------------------------------------------
 	// Contracts / Asserts:
 	@Parameter(key = "check_contracts", description = "Check contracts during test execution")
