@@ -815,16 +815,6 @@ public class BranchPool {
 	public List<String> retrieveMethodsInClass(String className) {
 		List<String> methods = new ArrayList<>();
 
-		/*if (branchMap.containsKey(className)) {
-			methods.addAll(branchMap.get(className).keySet());
-		}
-
-		if (branchlessMethods.containsKey(className)) {
-			for (String fqMethodName : branchlessMethods.get(className).keySet()) {
-				methods.add(fqMethodName.substring(className.length() +	1));
-			}
-		}*/
-
 		for (String classNameInBranchMap : branchMap.keySet()) {
 		    if (classNameInBranchMap.startsWith(className)) {
 		        for (String methodName : branchMap.get(classNameInBranchMap).keySet()) {

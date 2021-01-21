@@ -96,10 +96,6 @@ public abstract class AbstractMOSA<T extends Chromosome> extends GeneticAlgorith
 			TestSuiteFitnessFunction suiteFit = FitnessFunctions.getFitnessFunction(criterion);
 			Class<?> testFit = FitnessFunctions.getTestFitnessFunctionClass(criterion);
 			this.suiteFitnessFunctions.put(suiteFit, testFit);
-
-			if (criterion == Properties.Criterion.BRANCH) {
-				((BranchCoverageSuiteFitness) suiteFit).calculateTotalNumTestCasesInZeroFront();
-			}
 		}
 
 		this.budgetMonitor = new BudgetConsumptionMonitor();

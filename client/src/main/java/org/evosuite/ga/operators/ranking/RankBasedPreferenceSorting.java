@@ -101,59 +101,23 @@ public class RankBasedPreferenceSorting<T extends Chromosome> implements Ranking
 			// for each uncovered goal, peak up the best tests using the proper comparator
 			PreferenceSortingComparator<T> comp = new PreferenceSortingComparator<T>(f);
 
-			if (f instanceof BranchCoverageTestFitness) {	//TODO: Refactor
-				int numTestCasesInZeroFront = ((BranchCoverageTestFitness) f).getNumTestCasesInZeroFront();
-				if (numTestCasesInZeroFront == 0) {
-				    continue;
-                }
-
-				for (int attempt = 0; attempt < numTestCasesInZeroFront; attempt++) {
-					T best = null;
-					for (T test : solutionSet) {
-						if (test.isSelectedToZeroFront()) {
-							continue;
-						}
-
-						if (Double.compare(test.getFitness(f), 0.0) == 0) {
-							continue;
-						}
-
-						int flag = comp.compare(test, best);
-						if (flag < 0 || (flag == 0  && Randomness.nextBoolean())) {
-							best = test;
-						}
-					}
-					assert best != null;
-
-					if (best != null) {
-                        best.setRank(0);
-                        zero_front.add(best);
-
-                        best.setSelectedToZeroFront(true);
-                    }
+			T best = null;
+			for (T test : solutionSet) {
+				if (Double.compare(test.getFitness(f), 0.0) == 0) {
+					continue;
 				}
 
-				for (T test : solutionSet) {
-					test.setSelectedToZeroFront(false);
+				int flag = comp.compare(test, best);
+				if (flag < 0 || (flag == 0  && Randomness.nextBoolean())) {
+					best = test;
 				}
-			} else {
-				T best = null;
-				for (T test : solutionSet) {
-					if (Double.compare(test.getFitness(f), 0.0) == 0) {
-						continue;
-					}
+			}
+			assert best != null;
 
-					int flag = comp.compare(test, best);
-					if (flag < 0 || (flag == 0  && Randomness.nextBoolean())) {
-						best = test;
-					}
-				}
-				assert best != null;
-
+			if (best != null) {
 				best.setRank(0);
 				zero_front.add(best);
 			}
-
 		}
 		return new ArrayList<T>(zero_front);
 	}
