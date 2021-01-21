@@ -140,22 +140,6 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		this.currentIteration++;
 
-		/*if (!triggerFired) {
-			if (goalsManager.getUncoveredGoals().size() == 0) {
-				// trigger point to include non-buggy goals
-				this.triggerFired = true;
-				goalsManager.updateCurrentGoals();
-				goalsManager.updateUncoveredGoals();
-				goalsManager.updateMethods();
-				goalsManager.updateBranchCoverageMaps();
-
-				LoggingUtils.getEvoLogger().info(
-						"Trigger to include non-buggy goals fired at {} seconds after {} generations",
-						(int) (this.getCurrentTime() / 1000), this.currentIteration);
-				LoggingUtils.getEvoLogger().info("Trigger cause: All buggy goals are covered");
-			}
-		}*/
-
 		if (!triggerFired) {
 			if (goalsManager.getUncoveredGoals().size() == this.currentUncoveredGoals) {
 				this.currentIterationsWoImprovements++;

@@ -119,12 +119,15 @@ public class TestSuiteGenerator {
 			MethodPool.getInstance(Properties.TARGET_CLASS).loadDefectScores();
 
 			BranchPool branchPool = BranchPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT());
-			MethodPool.getInstance(Properties.TARGET_CLASS).updateNumBranches(branchPool);
+			MethodPool.getInstance(Properties.TARGET_CLASS).findAllEquivalentMethodNames(branchPool);
 
-			MethodPool.getInstance(Properties.TARGET_CLASS).calculateWeights();
-			MethodPool.getInstance(Properties.TARGET_CLASS).calculateScaleDownFactor();
+			// These steps are unnecessary if PreMOSA runs based on defectiveness classifications, i.e., 1 and 0
+			// MethodPool.getInstance(Properties.TARGET_CLASS).updateNumBranches(branchPool);
 
-			MethodPool.getInstance(Properties.TARGET_CLASS).calculateArchiveProbabilities();
+			// MethodPool.getInstance(Properties.TARGET_CLASS).calculateWeights();
+			// MethodPool.getInstance(Properties.TARGET_CLASS).calculateScaleDownFactor();
+
+			// MethodPool.getInstance(Properties.TARGET_CLASS).calculateArchiveProbabilities();
 		}
 
 		LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Finished analyzing classpath");

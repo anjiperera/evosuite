@@ -58,6 +58,19 @@ public class MethodPool {
         }
     }
 
+    public void findAllEquivalentMethodNames(BranchPool branchPool) {
+        List<String> methodsEvoFormat = branchPool.retrieveMethodsInClass(className);
+
+        for (String methodEvoFormat : methodsEvoFormat) {
+            String fqConvertedMethodName = methodEvoFormat;
+            if (Properties.DP_INPUT_FORMAT == Properties.MethodSignatureFormat.OWN_1) {
+                fqConvertedMethodName = MethodUtils.convertMethodName(methodEvoFormat, className);
+            }
+
+            this.equivalentMethodNames.put(methodEvoFormat, fqConvertedMethodName);
+        }
+    }
+
     public void updateNumBranches(BranchPool branchPool) {
         List<String> methodsEvoFormat = branchPool.retrieveMethodsInClass(className);
 
@@ -274,11 +287,16 @@ public class MethodPool {
         return 0.0;
     }
 
+    /*
+        isBuggy(String, String) assumes the defect scores input file gives a classification of defectiveness.
+        if defect score is 1 -> buggy
+        if defect score is 0 -> non-buggy
+     */
     public boolean isBuggy(String className, String methodName) {
         Method method = null;
         try {
             method = getMethodsByEvoFormatName(className + "." + methodName);
-            return method.getDefectScore() > 0 ? true : false;
+            return method.getDefectScore() == 1;
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -89,11 +89,11 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 		nonBuggyGoals = new HashSet<FitnessFunction<T>>(fitnessFunctions.size());
 
-		// initialize uncovered goals
+		// initialize uncovered goals and find nonBuggyGoals
 		// uncoveredGoals.addAll(fitnessFunctions);
 		for (FitnessFunction<T> ff : fitnessFunctions) {
 			if (ff instanceof BranchCoverageTestFitness) {
-				if (((BranchCoverageTestFitness) ff).getNumTestCasesInZeroFront() > 0) {
+				if (((BranchCoverageTestFitness) ff).isBuggy()) {
 					uncoveredGoals.add(ff);
 				} else {
 					nonBuggyGoals.add(ff);
@@ -109,8 +109,11 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 			}
 		}
 
+		LoggingUtils.getEvoLogger().info("* Total Number of Buggy Goals: " + uncoveredGoals.size());
+		LoggingUtils.getEvoLogger().info("* Total Number of Non-Buggy Goals: " + nonBuggyGoals.size());
+
 		// initialize the dependency graph among branches 
-		this.graph = getControlDepencies4Branches(fitnessFunctions);
+		this.graph = getControlDepencies4Branches();
 
 		this.methods = getMethods(fitnessFunctions, this.nonBuggyMethods);
 
@@ -160,7 +163,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 		// initialize current goals
 		// this.currentGoals.addAll(graph.getRootBranches());
 		for (FitnessFunction<T> ff : graph.getRootBranches()) {
-			if (((BranchCoverageTestFitness) ff).getNumTestCasesInZeroFront() > 0) {
+			if (((BranchCoverageTestFitness) ff).isBuggy()) {
 				this.currentGoals.add(ff);
 			}
 		}
@@ -250,13 +253,13 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 			}
 
 			if (goal.getBranch() == null) {
-				if (goal.getNumTestCasesInZeroFront() > 0) {
+				if (goal.isBuggy()) {
 					branchlessMethodCoverageMap.put(goal.getClassName() + "." + goal.getMethod(), ff);
 				} else {
 					nBBranchlessMethodCoverageMap.put(goal.getClassName() + "." + goal.getMethod(), ff);
 				}
 			} else {
-				if (goal.getNumTestCasesInZeroFront() > 0) {
+				if (goal.isBuggy()) {
 					if (goal.getBranchExpressionValue()) {
 						branchCoverageTrueMap.put(goal.getBranch().getActualBranchId(), ff);
 					}
@@ -613,19 +616,14 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 		return covered_exceptions;
 	}
 
-	public BranchFitnessGraph getControlDepencies4Branches(List<FitnessFunction<T>> fitnessFunctions){
+	public BranchFitnessGraph getControlDepencies4Branches(){
 		Set<FitnessFunction<T>> setOfBranches = new LinkedHashSet<FitnessFunction<T>>();
 		this.dependencies = new LinkedHashMap();
 
 		List<BranchCoverageTestFitness> branches = new BranchCoverageFactory().getCoverageGoals();
 		for (BranchCoverageTestFitness branch : branches){
-			if (branch.getNumTestCasesInZeroFront() > 0) {
-				setOfBranches.add((FitnessFunction<T>) branch);
-				this.dependencies.put(branch, new LinkedHashSet<FitnessFunction<T>>());
-			} else {
-				setOfBranches.add((FitnessFunction<T>) branch);
-				this.dependencies.put(branch, new LinkedHashSet<FitnessFunction<T>>());
-			}
+			setOfBranches.add((FitnessFunction<T>) branch);
+			this.dependencies.put(branch, new LinkedHashSet<FitnessFunction<T>>());
 		}
 
 		// initialize the maps
@@ -648,7 +646,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 	public void updateCurrentGoals() {
 		for (FitnessFunction<T> ff : graph.getRootBranches()) {
-			if (((BranchCoverageTestFitness) ff).getNumTestCasesInZeroFront() == 0) {
+			if (!((BranchCoverageTestFitness) ff).isBuggy()) {
 				this.currentGoals.add(ff);
 			}
 		}

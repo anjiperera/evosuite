@@ -97,8 +97,6 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
 	// a molecule has taken. (field used by Chemical Reaction Optimization algorithms)
 	protected int numCollisions = 0;
 
-	private boolean selectedToZeroFront = false;
-
 	/**
 	 * Return current fitness value
 	 * 
@@ -647,11 +645,4 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
 		this.numCollisions++;
 	}
 
-	public boolean isSelectedToZeroFront() {
-		return selectedToZeroFront;
-	}
-
-	public void setSelectedToZeroFront(boolean selectedToZeroFront) {
-		this.selectedToZeroFront = selectedToZeroFront;
-	}
 }

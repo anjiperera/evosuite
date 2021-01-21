@@ -51,6 +51,8 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 	private int numTestCasesInZeroFront = 1;
 	private double archiveProbability = 1.0;
 
+	private boolean isBuggy = false;
+
 	/**
 	 * The line number in the source code. This information is stored in the bytecode if the
 	 * code was compiled in debug mode. If no info, we would get a negative value (e.g., -1) here.
@@ -109,7 +111,8 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 					.getFirstLineNumberOfMethod(className,methodName);
 		}
 
-		setNumTestCasesInZeroFront(className, methodName);
+		// setNumTestCasesInZeroFront(className, methodName);
+		setBuggy(className, methodName);
 	}
 
 	/**
@@ -140,7 +143,8 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 		this.methodName = methodName;
 		this.lineNumber = lineNumber;
 
-		setNumTestCasesInZeroFront(className, methodName);
+		// setNumTestCasesInZeroFront(className, methodName);
+		setBuggy(className, methodName);
 	}
 
 	/**
@@ -177,7 +181,8 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 		lineNumber = BytecodeInstructionPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT())
 				.getFirstLineNumberOfMethod(className,  methodName);
 
-		setNumTestCasesInZeroFront(className, methodName);
+		// setNumTestCasesInZeroFront(className, methodName);
+		setBuggy(className, methodName);
 	}
 
 	/**
@@ -402,7 +407,7 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 		return numTestCasesInZeroFront;
 	}
 
-	public void setNumTestCasesInZeroFront(int numTestCasesInZeroFront) {
+	private void setNumTestCasesInZeroFront(int numTestCasesInZeroFront) {
 		this.numTestCasesInZeroFront = numTestCasesInZeroFront;
 	}
 
@@ -425,4 +430,24 @@ public class BranchCoverageGoal implements Serializable, Comparable<BranchCovera
 	public void setArchiveProbability(double archiveProbability) {
 		this.archiveProbability = archiveProbability;
 	}
+
+	private void setBuggy(boolean isBuggy) {
+		this.isBuggy = isBuggy;
+	}
+
+	public boolean isBuggy() {
+		return this.isBuggy;
+	}
+
+	private void setBuggy(String fullClassName, String methodName) {
+		if (Properties.DP_LEVEL == Properties.DefectPredictionLevel.METHOD) {
+			String className = fullClassName;
+			if (fullClassName.contains("$")) {
+				className = fullClassName.substring(0, fullClassName.indexOf('$'));
+			}
+
+			this.setBuggy(MethodPool.getInstance(className).isBuggy(fullClassName, methodName));
+		}
+	}
+
 }
