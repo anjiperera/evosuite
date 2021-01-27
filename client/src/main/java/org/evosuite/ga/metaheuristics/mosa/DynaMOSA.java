@@ -19,6 +19,7 @@
  */
 package org.evosuite.ga.metaheuristics.mosa;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.evosuite.ga.operators.ranking.CrowdingDistance;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteFitnessFunction;
+import org.evosuite.utils.FileIOUtils;
 import org.evosuite.utils.LoggingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,6 +65,9 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	private int currentIterationsWoImprovements = 0;
 	private int currentUncoveredGoals = 0;
 	private boolean triggerFired = false;
+
+	private List<Integer> buggyGoalsCoverage = new ArrayList<>();
+	private List<Integer> unCoveredGoalsMonitor = new ArrayList<>();
 
 	/**
 	 * Constructor based on the abstract class {@link AbstractMOSA}.
@@ -139,6 +144,11 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		}
 
 		this.currentIteration++;
+
+		if (!triggerFired) {
+			this.buggyGoalsCoverage.add(this.getNumberOfCoveredGoals());
+			this.unCoveredGoalsMonitor.add(this.getNumberOfUncoveredGoals());
+		}
 
 		if (!triggerFired) {
 			if (goalsManager.getUncoveredGoals().size() == this.currentUncoveredGoals) {
@@ -267,6 +277,11 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		this.currentUncoveredGoals = goalsManager.getUncoveredGoals().size();
 
+		if (!triggerFired) {
+			this.buggyGoalsCoverage.add(this.getNumberOfCoveredGoals());
+			this.unCoveredGoalsMonitor.add(this.getNumberOfUncoveredGoals());
+		}
+
 		// next generations
 		while (!isFinished() /*&& this.goalsManager.getUncoveredGoals().size() > 0*/) {
 			this.evolve();
@@ -277,7 +292,28 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		LoggingUtils.getEvoLogger().info("Adjust Goals Overhead: {} ms",
 				(double) (this.adjustGoalsOH) / 1000000);
 
+		writeBuggyGoalsCoverageToFile();
+
 		this.notifySearchFinished();
+	}
+
+	private void writeBuggyGoalsCoverageToFile() {
+		String NEWLINE = java.lang.System.getProperty("line.separator");
+
+		StringBuilder buggyGoalsCoverageOut = new StringBuilder();
+
+		buggyGoalsCoverageOut.append("iteration,covered_goals,uncovered_goals" + NEWLINE);
+
+		int iteration = 0;
+		for (int coverage : this.buggyGoalsCoverage) {
+			buggyGoalsCoverageOut.append(iteration + "," + coverage + "," + this.unCoveredGoalsMonitor.get(iteration) +
+					NEWLINE);
+			iteration++;
+		}
+
+		File fileBuggyGoalsCoverage = new File(Properties.REPORT_DIR + File.separator +
+				"buggy_goals_coverage_improvement.csv");
+		FileIOUtils.writeFile(buggyGoalsCoverageOut.toString(), fileBuggyGoalsCoverage);
 	}
 
 	/** 
