@@ -1303,8 +1303,13 @@ public class Properties {
 		JVM, OWN_1
 	}
 
-	@Parameter(key = "iterations_without_improvement", description = "Number of iterations without improvement in buggy goals coverage")
+	@Parameter(key = "iterations_without_improvement", description = "Number of iterations without improvement in " +
+			"buggy goals coverage to trigger the inclusion of non buggy goals")
 	public static int ITERATIONS_WO_IMPROVEMENT = 5;
+
+	@Parameter(key = "zero_coverage_trigger", description = "Number of iterations with zero buggy goals coverage to" +
+			" trigger the inclusion of non buggy goals")
+	public static int ZERO_COVERAGE_TRIGGER = 25;
 
 	// ---------------------------------------------------------------
 	// Contracts / Asserts:
