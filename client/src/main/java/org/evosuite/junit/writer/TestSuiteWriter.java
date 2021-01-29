@@ -768,6 +768,16 @@ public class TestSuiteWriter implements Opcodes {
             builder.append(testInfo);
         }
 
+        // --------- log age of the test case ------
+        if (Properties.LOG_AGE) {
+            builder.append(INNER_BLOCK_SPACE);
+            builder.append("// age = ");
+
+            TestCase test = testCases.get(id);
+            String testAge = test.getAge() + NEWLINE;
+            builder.append(testAge);
+        }
+
         // ---------   start with the body -------------------------
         String CODE_SPACE = INNER_BLOCK_SPACE;
 

@@ -91,6 +91,8 @@ public class DefaultTestCase implements TestCase, Serializable {
 
 	private long timeTaken;
 
+	private int age;
+
 	/**
 	 * Constructor
 	 */
@@ -1214,6 +1216,16 @@ public class DefaultTestCase implements TestCase, Serializable {
 	@Override
 	public long getTimeTaken() {
 		return this.timeTaken;
+	}
+
+	@Override
+	public void setAge(int age) {
+		this.age = age;
+	}
+
+	@Override
+	public int getAge() {
+		return this.age;
 	}
 
 	/* (non-Javadoc)

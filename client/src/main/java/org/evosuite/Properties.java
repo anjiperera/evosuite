@@ -1125,6 +1125,9 @@ public class Properties {
 	@Parameter(key = "log_time_taken", group = "Output", description = "Log time taken to generate test case")
 	public static boolean LOG_TIME_TAKEN = false;
 
+	@Parameter(key = "log_age", group = "Output", description = "Log age of a test case")
+	public static boolean LOG_AGE = false;
+
 	// ---------------------------------------------------------------
 	// Sandbox
 	@Parameter(key = "sandbox", group = "Sandbox", description = "Execute tests in a sandbox environment")

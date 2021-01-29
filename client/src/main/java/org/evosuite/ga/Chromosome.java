@@ -505,9 +505,14 @@ public abstract class Chromosome implements Comparable<Chromosome>, Serializable
 		this.age = generation;
 		this.timeTaken = currentTime;
 		this.updateTimeTaken();
+		this.updateAgeInTestCase();
 	}
 
-	protected void updateTimeTaken(){
+	protected void updateTimeTaken() {
+		return;
+	}
+
+	protected void updateAgeInTestCase() {
 		return;
 	}
 

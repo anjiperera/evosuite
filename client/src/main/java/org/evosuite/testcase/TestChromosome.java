@@ -713,6 +713,11 @@ public class TestChromosome extends ExecutableChromosome {
 		test.setTimeTaken(this.timeTaken);
 	}
 
+	@Override
+	protected void updateAgeInTestCase() {
+		test.setAge(this.age);
+	}
+
 	/**
 	 * Add an additional secondary objective to the end of the list of
 	 * objectives

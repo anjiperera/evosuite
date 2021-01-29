@@ -519,5 +519,9 @@ public interface TestCase extends Iterable<Statement>, Cloneable, Listenable<Voi
 	public void setTimeTaken(long timeTaken);
 
 	public long getTimeTaken();
+
+	public void setAge(int age);
+
+	public int getAge();
 	
 }
