@@ -19,6 +19,7 @@
  */
 package org.evosuite.ga.metaheuristics.mosa;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.evosuite.ga.operators.ranking.CrowdingDistance;
 import org.evosuite.testcase.TestChromosome;
 import org.evosuite.testsuite.TestSuiteChromosome;
 import org.evosuite.testsuite.TestSuiteFitnessFunction;
+import org.evosuite.utils.FileIOUtils;
 import org.evosuite.utils.LoggingUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -254,6 +256,23 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		logger.debug("executing generateSolution function");
 
 		this.goalsManager = new MultiCriteriatManager<T>(this.fitnessFunctions);
+
+		String NEWLINE = java.lang.System.getProperty("line.separator");
+		StringBuilder branchInfoOut = new StringBuilder();
+		branchInfoOut.append("class_name,method_name,branch_name" + NEWLINE);
+
+		for (FitnessFunction<T> fitnessFunction : this.fitnessFunctions) {
+			if (fitnessFunction instanceof BranchCoverageTestFitness) {
+				String className = ((BranchCoverageTestFitness) fitnessFunction).getClassName();
+				String methodName = className + '.' + ((BranchCoverageTestFitness) fitnessFunction).getMethod();
+				String branchName = fitnessFunction.toString();
+
+				branchInfoOut.append(className + "," + methodName + "," + branchName + NEWLINE);
+			}
+		}
+
+		File branchInfoFile = new File(Properties.REPORT_DIR + File.separator + "branch_info.csv");
+		FileIOUtils.writeFile(branchInfoOut.toString(), branchInfoFile);
 
 		if (this.goalsManager.getCurrentGoals().size() == 0) {
 			// trigger point to include non-buggy goals
