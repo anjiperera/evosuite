@@ -35,6 +35,8 @@ import org.evosuite.coverage.dataflow.DefUseCoverageSuiteFitness;
 import org.evosuite.defectprediction.method.MethodPool;
 import org.evosuite.ga.metaheuristics.GeneticAlgorithm;
 import org.evosuite.ga.stoppingconditions.StoppingCondition;
+import org.evosuite.graphs.GraphPool;
+import org.evosuite.graphs.cfg.RawControlFlowGraph;
 import org.evosuite.junit.JUnitAnalyzer;
 import org.evosuite.junit.writer.TestSuiteWriter;
 import org.evosuite.regression.bytecode.RegressionClassDiff;
@@ -72,8 +74,10 @@ import org.evosuite.testcase.statements.numeric.BooleanPrimitiveStatement;
 import org.evosuite.testcase.variable.VariableReference;
 import org.evosuite.testsuite.*;
 import org.evosuite.utils.ArrayUtil;
+import org.evosuite.utils.FileIOUtils;
 import org.evosuite.utils.LoggingUtils;
 import org.evosuite.utils.generic.GenericMethod;
+import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,6 +132,46 @@ public class TestSuiteGenerator {
 			// MethodPool.getInstance(Properties.TARGET_CLASS).calculateScaleDownFactor();
 
 			// MethodPool.getInstance(Properties.TARGET_CLASS).calculateArchiveProbabilities();
+
+			GraphPool graphPool = GraphPool.getInstance(TestGenerationContext.getInstance().getClassLoaderForSUT());
+			Set<String> classes = branchPool.knownClasses();
+
+			String NEWLINE = java.lang.System.getProperty("line.separator");
+			StringBuilder methodInfoOut = new StringBuilder();
+			methodInfoOut.append("class_name,method_name,access_modifier,is_buggy" + NEWLINE);
+
+			for (String className : classes) {
+				Map<String, RawControlFlowGraph> rawCfgs = graphPool.getRawCFGs(className);
+				for (String methodName : rawCfgs.keySet()) {
+					RawControlFlowGraph rawCfg = rawCfgs.get(methodName);
+					int access = rawCfg.getMethodAccess();
+
+					String shortClassName = className;
+					if (className.contains("$")) {
+						shortClassName = className.substring(0, className.indexOf('$'));
+					}
+
+					Boolean isMethodBuggy = MethodPool.getInstance(shortClassName).isBuggy(className, methodName);
+
+					String accessModifier = "";
+					if ((access & Opcodes.ACC_PUBLIC) == Opcodes.ACC_PUBLIC) {
+						// public access modifier
+						accessModifier = "public";
+					} else if ((access & Opcodes.ACC_PRIVATE) == Opcodes.ACC_PRIVATE) {
+						// private access modifier
+						accessModifier = "private";
+					} else if ((access & Opcodes.ACC_PROTECTED) == Opcodes.ACC_PROTECTED) {
+						// protected access modifier
+						accessModifier = "protected";
+					}
+
+					methodInfoOut.append(className + "," + className + "." + methodName + "," + accessModifier + "," +
+							isMethodBuggy + NEWLINE);
+				}
+			}
+
+			File methodInfoFile = new File(Properties.REPORT_DIR + File.separator + "method_info.csv");
+			FileIOUtils.writeFile(methodInfoOut.toString(), methodInfoFile);
 		}
 
 		LoggingUtils.getEvoLogger().info("* " + ClientProcess.getPrettyPrintIdentifier() + "Finished analyzing classpath");
