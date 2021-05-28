@@ -58,11 +58,6 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 	protected CrowdingDistance<T> distance = new CrowdingDistance<T>();
 
-	private int currentIterationsWoImprovements = 0;
-	private int currentUncoveredGoals = 0;
-	private boolean triggerFired = false;
-	private boolean zeroGoalsCovered = true;
-
 	/**
 	 * Constructor based on the abstract class {@link AbstractMOSA}.
 	 * 
@@ -146,21 +141,6 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		logger.debug("executing generateSolution function");
 
 		this.goalsManager = new MultiCriteriatManager<T>(this.fitnessFunctions);
-
-		if (this.goalsManager.getCurrentGoals().size() == 0) {
-			// trigger point to include non-buggy goals
-			this.triggerFired = true;
-			goalsManager.updateCurrentGoals();
-			goalsManager.updateUncoveredGoals();
-			goalsManager.updateMethods();
-			goalsManager.updateBranchCoverageMaps();
-
-			LoggingUtils.getEvoLogger().info(
-					"Trigger to include non-buggy goals fired at {} seconds after {} generations",
-					(int) (this.getCurrentTime() / 1000), this.currentIteration);
-			LoggingUtils.getEvoLogger().info("Trigger cause: No buggy goals");
-		}
-
 		LoggingUtils.getEvoLogger().info("* Initial Number of Goals in DynMOSA = " +
 				this.goalsManager.getCurrentGoals().size() +" / "+ this.getUncoveredGoals().size());
 
@@ -179,14 +159,6 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		for (int i = 0; i < this.rankingFunction.getNumberOfSubfronts(); i++){
 			this.distance.fastEpsilonDominanceAssignment(this.rankingFunction.getSubfront(i), this.goalsManager.getCurrentGoals());
-		}
-
-		this.currentUncoveredGoals = goalsManager.getUncoveredGoals().size();
-
-		if (zeroGoalsCovered) {
-			if (goalsManager.getCoveredGoals().size() > 0) {
-				zeroGoalsCovered = false;
-			}
 		}
 
 		// next generations
