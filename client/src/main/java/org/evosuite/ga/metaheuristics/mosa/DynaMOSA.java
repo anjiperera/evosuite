@@ -133,54 +133,6 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 
 		this.currentIteration++;
 
-		if (!triggerFired) {
-			if (goalsManager.getUncoveredGoals().size() == this.currentUncoveredGoals) {
-				this.currentIterationsWoImprovements++;
-			} else {
-				this.currentUncoveredGoals = goalsManager.getUncoveredGoals().size();
-				this.currentIterationsWoImprovements = 0;
-			}
-
-			if (this.currentIterationsWoImprovements >= Properties.ITERATIONS_WO_IMPROVEMENT) {
-				// trigger point to include non-buggy goals
-				this.triggerFired = true;
-				goalsManager.updateCurrentGoals();
-				goalsManager.updateUncoveredGoals();
-				goalsManager.updateMethods();
-				goalsManager.updateBranchCoverageMaps();
-
-				LoggingUtils.getEvoLogger().info(
-						"Trigger to include non-buggy goals fired at {} seconds after {} generations",
-						(int) (this.getCurrentTime() / 1000), this.currentIteration);
-				LoggingUtils.getEvoLogger().info(
-						"Trigger cause: Buggy goals coverage is not improved for {} generations, current uncovered goals {}",
-						this.currentIterationsWoImprovements, this.currentUncoveredGoals);
-			}
-		}
-
-		if (zeroGoalsCovered) {
-			if (goalsManager.getCoveredGoals().size() > 0) {
-				zeroGoalsCovered = false;
-			}
-		}
-
-		if (zeroGoalsCovered && !triggerFired) {
-			if (this.currentIteration >= Properties.ZERO_COVERAGE_TRIGGER) {
-				this.triggerFired = true;
-				goalsManager.updateCurrentGoals();
-				goalsManager.updateUncoveredGoals();
-				goalsManager.updateMethods();
-				goalsManager.updateBranchCoverageMaps();
-
-				LoggingUtils.getEvoLogger().info(
-						"Trigger to include non-buggy goals fired at {} seconds after {} generations",
-						(int) (this.getCurrentTime() / 1000), this.currentIteration);
-				LoggingUtils.getEvoLogger().info(
-						"Trigger cause: Buggy goals coverage is zero for {} generations, current uncovered goals {}",
-						this.currentIteration, this.currentUncoveredGoals);
-			}
-		}
-
 		logger.debug("Covered goals = {}", goalsManager.getCoveredGoals().size());
 		logger.debug("Current goals = {}", goalsManager.getCurrentGoals().size());
 		logger.debug("Uncovered goals = {}", goalsManager.getUncoveredGoals().size());
