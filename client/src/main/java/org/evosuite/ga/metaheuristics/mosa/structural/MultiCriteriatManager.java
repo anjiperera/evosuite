@@ -69,22 +69,26 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	protected Map<BranchCoverageTestFitness, Set<FitnessFunction<T>>> dependencies;
 
 	/** Number of independent paths leading up from each target (goal) */
-	private Map<FitnessFunction<T>, Integer> numPaths = new LinkedHashMap<>();
+	protected Map<FitnessFunction<T>, Integer> numPaths = new LinkedHashMap<>();
 
 	/** Children of each target (goal) */
-	private Map<FitnessFunction<T>, Set<FitnessFunction<T>>> children = new LinkedHashMap<>();
+	protected Map<FitnessFunction<T>, Set<FitnessFunction<T>>> children = new LinkedHashMap<>();
 
 	protected final Map<Integer, FitnessFunction<T>> branchCoverageTrueMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
 	protected final Map<Integer, FitnessFunction<T>> branchCoverageFalseMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
-	private final Map<String, FitnessFunction<T>> branchlessMethodCoverageMap = new LinkedHashMap<String, FitnessFunction<T>>();
+	protected final Map<String, FitnessFunction<T>> branchlessMethodCoverageMap = new LinkedHashMap<String, FitnessFunction<T>>();
 
 	public MultiCriteriatManager(List<FitnessFunction<T>> fitnessFunctions) {
 		super(fitnessFunctions);
+		init(fitnessFunctions);
+	}
 
+	@Override
+	protected void init(List<FitnessFunction<T>> fitnessFunctions) {
 		// initialize uncovered goals
 		uncoveredGoals.addAll(fitnessFunctions);
 
-		// initialize the dependency graph among branches 
+		// initialize the dependency graph among branches
 		this.graph = getControlDepencies4Branches();
 
 		// initialize the dependency graph between branches and other coverage targets (e.g., statements)
