@@ -80,7 +80,6 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 	public MultiCriteriatManager(List<FitnessFunction<T>> fitnessFunctions) {
 		super(fitnessFunctions);
-		init(fitnessFunctions);
 	}
 
 	@Override
