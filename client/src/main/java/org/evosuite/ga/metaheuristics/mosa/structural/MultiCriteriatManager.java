@@ -68,54 +68,24 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 	protected Map<BranchCoverageTestFitness, Set<FitnessFunction<T>>> dependencies;
 
-	private Set<MethodCoverageTestFitness> methods;
-	private Set<MethodCoverageTestFitness> nonBuggyMethods = new HashSet<>();;
-
+	/** Number of independent paths leading up from each target (goal) */
 	private Map<FitnessFunction<T>, Integer> numPaths = new LinkedHashMap<>();
-	private Map<FitnessFunction<T>, Set<FitnessFunction<T>>> children = new LinkedHashMap<>();
 
-	private Set<FitnessFunction<T>> nonBuggyGoals;
+	/** Children of each target (goal) */
+	private Map<FitnessFunction<T>, Set<FitnessFunction<T>>> children = new LinkedHashMap<>();
 
 	protected final Map<Integer, FitnessFunction<T>> branchCoverageTrueMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
 	protected final Map<Integer, FitnessFunction<T>> branchCoverageFalseMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
 	private final Map<String, FitnessFunction<T>> branchlessMethodCoverageMap = new LinkedHashMap<String, FitnessFunction<T>>();
 
-	private final Map<Integer, FitnessFunction<T>> nBBranchCoverageTrueMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
-	private final Map<Integer, FitnessFunction<T>> nBBranchCoverageFalseMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
-	private final Map<String, FitnessFunction<T>> nBBranchlessMethodCoverageMap = new LinkedHashMap<String, FitnessFunction<T>>();
-
 	public MultiCriteriatManager(List<FitnessFunction<T>> fitnessFunctions) {
 		super(fitnessFunctions);
 
-		nonBuggyGoals = new HashSet<FitnessFunction<T>>(fitnessFunctions.size());
-
-		// initialize uncovered goals and find nonBuggyGoals
-		// uncoveredGoals.addAll(fitnessFunctions);
-		for (FitnessFunction<T> ff : fitnessFunctions) {
-			if (ff instanceof BranchCoverageTestFitness) {
-				if (((BranchCoverageTestFitness) ff).isBuggy()) {
-					uncoveredGoals.add(ff);
-				} else {
-					nonBuggyGoals.add(ff);
-				}
-			} else if (ff instanceof MethodCoverageTestFitness) {
-				if (((MethodCoverageTestFitness) ff).isBuggy()) {
-					uncoveredGoals.add(ff);
-				} else {
-					nonBuggyGoals.add(ff);
-				}
-			} else {
-				uncoveredGoals.add(ff);
-			}
-		}
-
-		LoggingUtils.getEvoLogger().info("* Total Number of Buggy Goals: " + uncoveredGoals.size());
-		LoggingUtils.getEvoLogger().info("* Total Number of Non-Buggy Goals: " + nonBuggyGoals.size());
+		// initialize uncovered goals
+		uncoveredGoals.addAll(fitnessFunctions);
 
 		// initialize the dependency graph among branches 
 		this.graph = getControlDepencies4Branches();
-
-		this.methods = getMethods(fitnessFunctions, this.nonBuggyMethods);
 
 		// initialize the dependency graph between branches and other coverage targets (e.g., statements)
 		// let's derive the dependency graph between branches and other coverage targets (e.g., statements)
@@ -161,13 +131,9 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 		}
 
 		// initialize current goals
-		// this.currentGoals.addAll(graph.getRootBranches());
-		for (FitnessFunction<T> ff : graph.getRootBranches()) {
-			if (((BranchCoverageTestFitness) ff).isBuggy()) {
-				this.currentGoals.add(ff);
-			}
-		}
+		this.currentGoals.addAll(graph.getRootBranches());
 
+		// Calculate number of independent paths leading up from each target (goal)
 		long pathsCalculationStartTime = System.nanoTime();
 		for (FitnessFunction<T> rootBranch : graph.getRootBranches()) {
 			Set<FitnessFunction<T>> allParents = new HashSet<>();
@@ -186,24 +152,8 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 			}
 		}
 		long pathsCalculationEndTime = System.nanoTime();
-		LoggingUtils.getEvoLogger().info("Paths Calculation Overhead: {} ms",
+		LoggingUtils.getEvoLogger().info("* Paths Calculation Overhead: {} ms",
 				(double) (pathsCalculationEndTime - pathsCalculationStartTime) / 1000000);
-	}
-
-	private Set<MethodCoverageTestFitness> getMethods(List<FitnessFunction<T>> fitnessFunctions,
-													  Set<MethodCoverageTestFitness> nonBuggyMethods) {
-		Set<MethodCoverageTestFitness> methods = new HashSet<>();
-		for (FitnessFunction<T> ff : fitnessFunctions) {
-			if (ff instanceof MethodCoverageTestFitness) {
-				if (((MethodCoverageTestFitness) ff).isBuggy()) {
-					methods.add((MethodCoverageTestFitness) ff);
-				} else {
-					nonBuggyMethods.add((MethodCoverageTestFitness) ff);
-				}
-			}
-		}
-
-		return methods;
 	}
 
 	private Integer calculateNumPaths(Set<FitnessFunction<T>> childrenOf) {
@@ -253,26 +203,12 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 			}
 
 			if (goal.getBranch() == null) {
-				if (goal.isBuggy()) {
-					branchlessMethodCoverageMap.put(goal.getClassName() + "." + goal.getMethod(), ff);
-				} else {
-					nBBranchlessMethodCoverageMap.put(goal.getClassName() + "." + goal.getMethod(), ff);
-				}
+				branchlessMethodCoverageMap.put(goal.getClassName() + "." + goal.getMethod(), ff);
 			} else {
-				if (goal.isBuggy()) {
-					if (goal.getBranchExpressionValue()) {
-						branchCoverageTrueMap.put(goal.getBranch().getActualBranchId(), ff);
-					}
-					else {
-						branchCoverageFalseMap.put(goal.getBranch().getActualBranchId(), ff);
-					}
+				if (goal.getBranchExpressionValue()) {
+					branchCoverageTrueMap.put(goal.getBranch().getActualBranchId(), ff);
 				} else {
-					if (goal.getBranchExpressionValue()) {
-						nBBranchCoverageTrueMap.put(goal.getBranch().getActualBranchId(), ff);
-					}
-					else {
-						nBBranchCoverageFalseMap.put(goal.getBranch().getActualBranchId(), ff);
-					}
+					branchCoverageFalseMap.put(goal.getBranch().getActualBranchId(), ff);
 				}
 			}
 		}
@@ -488,8 +424,6 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 			return;
 		}
 
-		Set<MethodCoverageTestFitness> visitedMethods = new HashSet<>();
-
 		// 1) we update the set of currents goals
 		Set<FitnessFunction<T>> visitedTargets = new LinkedHashSet<FitnessFunction<T>>(uncoveredGoals.size()*2);
 		LinkedList<FitnessFunction<T>> targets = new LinkedList<FitnessFunction<T>>();
@@ -505,10 +439,6 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 
 			double value = fitnessFunction.getFitness(c);
 			if (value == 0.0) {
-				if (fitnessFunction instanceof MethodCoverageTestFitness) {
-					visitedMethods.add((MethodCoverageTestFitness) fitnessFunction);
-				}
-
 				updateCoveredGoals(fitnessFunction, c);
 				if (fitnessFunction instanceof BranchCoverageTestFitness){
 					for (FitnessFunction<T> child : graph.getStructuralChildren(fitnessFunction)){
@@ -559,18 +489,6 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 				}
 			}
 		}
-
-		if (ArrayUtil.contains(Properties.CRITERION, METHOD)){
-			for (MethodCoverageTestFitness methodFf : this.methods) {
-				if (!visitedMethods.contains(methodFf)) {
-					double value = ((FitnessFunction) methodFf).getFitness(c);
-					if (value == 0.0) {
-						updateCoveredGoals((FitnessFunction) methodFf, c);
-					}
-				}
-			}
-		}
-
 	}
 
 	/**
@@ -632,37 +550,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 		return new BranchFitnessGraph<T, FitnessFunction<T>>(setOfBranches);
 	}
 
-    public Map<Integer, FitnessFunction<T>> getBranchCoverageTrueMap() {
-        return branchCoverageTrueMap;
-    }
-
-    public Map<Integer, FitnessFunction<T>> getBranchCoverageFalseMap() {
-        return branchCoverageFalseMap;
-    }
-
     public int getNumPathsFor(FitnessFunction<T> ff) {
 		return this.numPaths.get(ff);
-	}
-
-	public void updateCurrentGoals() {
-		for (FitnessFunction<T> ff : graph.getRootBranches()) {
-			if (!((BranchCoverageTestFitness) ff).isBuggy()) {
-				this.currentGoals.add(ff);
-			}
-		}
-	}
-
-	public void updateUncoveredGoals() {
-		this.uncoveredGoals.addAll(this.nonBuggyGoals);
-	}
-
-	public void updateMethods() {
-		this.methods.addAll(this.nonBuggyMethods);
-	}
-
-	public void updateBranchCoverageMaps() {
-		branchCoverageTrueMap.putAll(nBBranchCoverageTrueMap);
-		branchCoverageFalseMap.putAll(nBBranchCoverageFalseMap);
-		branchlessMethodCoverageMap.putAll(nBBranchlessMethodCoverageMap);
 	}
 }

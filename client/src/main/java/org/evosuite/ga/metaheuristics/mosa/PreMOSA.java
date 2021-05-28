@@ -31,6 +31,7 @@ import org.evosuite.ga.ChromosomeFactory;
 import org.evosuite.ga.FitnessFunction;
 import org.evosuite.ga.comparators.OnlyCrowdingComparator;
 import org.evosuite.ga.metaheuristics.mosa.structural.MultiCriteriatManager;
+import org.evosuite.ga.metaheuristics.mosa.structural.PredictiveCriteriaManager;
 import org.evosuite.ga.metaheuristics.mosa.structural.StructuralGoalManager;
 import org.evosuite.ga.operators.ranking.CrowdingDistance;
 import org.evosuite.testcase.TestChromosome;
@@ -51,6 +52,9 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
     private static final long serialVersionUID = 146182080947267628L;
 
     private static final Logger logger = LoggerFactory.getLogger(PreMOSA.class);
+
+    /** Manager to determine the test goals to consider at each generation */
+    protected PredictiveCriteriaManager<T> goalsManager = null;
 
     /** Total time taken to adjust the goals (switch on/off goals) in nano seconds */
     private long adjustGoalsOH = 0;
@@ -254,7 +258,7 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
     public void generateSolution() {
         logger.debug("executing generateSolution function");
 
-        this.goalsManager = new MultiCriteriatManager<T>(this.fitnessFunctions);
+        this.goalsManager = new PredictiveCriteriaManager<T>(this.fitnessFunctions);
 
         if (this.goalsManager.getCurrentGoals().size() == 0) {
             // trigger point to include non-buggy goals
