@@ -55,7 +55,7 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
     /** Total time taken to adjust the goals (switch on/off goals) in nano seconds */
     private long adjustGoalsOH = 0;
 
-    /** Number of current consecutive iterations without coverage improvement */
+    /** Number of current consecutive iterations without buggy goals coverage improvement */
     private int currentIterationsWoImprovements = 0;
 
     /** Current number of uncovered goals */
@@ -144,53 +144,7 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
 
         this.currentIteration++;
 
-        if (!triggerFired) {
-            if (goalsManager.getUncoveredGoals().size() == this.currentUncoveredGoals) {
-                this.currentIterationsWoImprovements++;
-            } else {
-                this.currentUncoveredGoals = goalsManager.getUncoveredGoals().size();
-                this.currentIterationsWoImprovements = 0;
-            }
-
-            if (this.currentIterationsWoImprovements >= Properties.ITERATIONS_WO_IMPROVEMENT) {
-                // trigger point to include non-buggy goals
-                this.triggerFired = true;
-                goalsManager.updateCurrentGoals();
-                goalsManager.updateUncoveredGoals();
-                goalsManager.updateMethods();
-                goalsManager.updateBranchCoverageMaps();
-
-                LoggingUtils.getEvoLogger().info(
-                        "Trigger to include non-buggy goals fired at {} seconds after {} generations",
-                        (int) (this.getCurrentTime() / 1000), this.currentIteration);
-                LoggingUtils.getEvoLogger().info(
-                        "Trigger cause: Buggy goals coverage is not improved for {} generations, current uncovered goals {}",
-                        this.currentIterationsWoImprovements, this.currentUncoveredGoals);
-            }
-        }
-
-        if (zeroGoalsCovered) {
-            if (goalsManager.getCoveredGoals().size() > 0) {
-                zeroGoalsCovered = false;
-            }
-        }
-
-        if (zeroGoalsCovered && !triggerFired) {
-            if (this.currentIteration >= Properties.ZERO_COVERAGE_TRIGGER) {
-                this.triggerFired = true;
-                goalsManager.updateCurrentGoals();
-                goalsManager.updateUncoveredGoals();
-                goalsManager.updateMethods();
-                goalsManager.updateBranchCoverageMaps();
-
-                LoggingUtils.getEvoLogger().info(
-                        "Trigger to include non-buggy goals fired at {} seconds after {} generations",
-                        (int) (this.getCurrentTime() / 1000), this.currentIteration);
-                LoggingUtils.getEvoLogger().info(
-                        "Trigger cause: Buggy goals coverage is zero for {} generations, current uncovered goals {}",
-                        this.currentIteration, this.currentUncoveredGoals);
-            }
-        }
+        addNonBuggyGoals();
 
         logger.debug("Covered goals = {}", goalsManager.getCoveredGoals().size());
         logger.debug("Current goals = {}", goalsManager.getCurrentGoals().size());
@@ -200,7 +154,6 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
     /**
      * Switch on/off current goals to balance test coverage among goals based on number of tests per an independent
      * path of each goal
-     *
      */
     private void adjustCurrentGoals() {
         for (int actualBranchId : this.goalsManager.getBranchCoverageTrueMap().keySet()) {
@@ -233,6 +186,65 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
                 this.goalsManager.getCurrentGoals().add(ffTrue);
             }
         }
+    }
+
+    /**
+     * Add non-buggy goals to the search if number of consecutive iterations without buggy goals coverage improvement
+     * is \geq org.evosuite.Properties.ITERATIONS_WO_IMPROVEMENT or if no buggy goal is covered for
+     * org.evosuite.Properties.ZERO_COVERAGE_TRIGGER
+     */
+    private void addNonBuggyGoals() {
+        if (!this.triggerFired) {
+            if (goalsManager.getUncoveredGoals().size() == this.currentUncoveredGoals) {
+                this.currentIterationsWoImprovements++;
+            } else {
+                this.currentUncoveredGoals = goalsManager.getUncoveredGoals().size();
+                this.currentIterationsWoImprovements = 0;
+            }
+
+            if (this.currentIterationsWoImprovements >= Properties.ITERATIONS_WO_IMPROVEMENT) {
+                // trigger point to include non-buggy goals
+                this.triggerFired = true;
+                updateGoalsManager();
+
+                LoggingUtils.getEvoLogger().info(
+                        "* Trigger to include non-buggy goals fired at {} seconds after {} generations",
+                        (int) (this.getCurrentTime() / 1000), this.currentIteration);
+                LoggingUtils.getEvoLogger().info(
+                        "* Trigger cause: Buggy goals coverage is not improved for {} generations, current uncovered goals {}",
+                        this.currentIterationsWoImprovements, this.currentUncoveredGoals);
+            }
+        }
+
+        if (this.zeroGoalsCovered) {
+            if (goalsManager.getCoveredGoals().size() > 0) {
+                this.zeroGoalsCovered = false;
+            }
+        }
+
+        if (zeroGoalsCovered && !triggerFired) {
+            if (this.currentIteration >= Properties.ZERO_COVERAGE_TRIGGER) {
+                this.triggerFired = true;
+                updateGoalsManager();
+
+                LoggingUtils.getEvoLogger().info(
+                        "* Trigger to include non-buggy goals fired at {} seconds after {} generations",
+                        (int) (this.getCurrentTime() / 1000), this.currentIteration);
+                LoggingUtils.getEvoLogger().info(
+                        "* Trigger cause: Buggy goals coverage is zero for {} generations, current uncovered goals {}",
+                        this.currentIteration, this.currentUncoveredGoals);
+            }
+        }
+    }
+
+    /**
+     * Update goals manager after the trigger is fired to include non-buggy goals in the search
+     */
+    private void updateGoalsManager() {
+        goalsManager.updateCurrentGoals();
+        goalsManager.updateUncoveredGoals();
+        goalsManager.updateMethods();
+        goalsManager.updateBranchCoverageMaps();
     }
 
     /**
