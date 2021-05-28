@@ -91,7 +91,7 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
 
         // Switch off targets to balance test coverage
         long adjustGoalsStartTime = System.nanoTime();
-        adjustCurrentGoals(false);
+        adjustCurrentGoals();
         long adjustGoalEndTime = System.nanoTime();
 
         this.adjustGoalsOH += adjustGoalEndTime - adjustGoalsStartTime;
@@ -197,7 +197,12 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
         logger.debug("Uncovered goals = {}", goalsManager.getUncoveredGoals().size());
     }
 
-    private void adjustCurrentGoals(boolean logInfo) {
+    /**
+     * Switch on/off current goals to balance test coverage among goals based on number of tests per an independent
+     * path of each goal
+     *
+     */
+    private void adjustCurrentGoals() {
         for (int actualBranchId : this.goalsManager.getBranchCoverageTrueMap().keySet()) {
             FitnessFunction ffTrue = this.goalsManager.getBranchCoverageTrueMap().get(actualBranchId);
             FitnessFunction ffFalse = this.goalsManager.getBranchCoverageFalseMap().get(actualBranchId);
@@ -205,12 +210,10 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
             int numTestsTrueBranch = this.goalsManager.getNumTests(ffTrue.toString());
             int numTestsFalseBranch = this.goalsManager.getNumTests(ffFalse.toString());
 
-            if (logInfo) {
-                LoggingUtils.getEvoLogger().info("Branch: {}, Number of Tests: {}, Num of Paths: {}", ffTrue.toString(),
-                        numTestsTrueBranch, this.goalsManager.getNumPathsFor(ffTrue));
-                LoggingUtils.getEvoLogger().info("Branch: {}, Number of Tests: {}, Num of Paths: {}", ffFalse.toString(),
-                        numTestsFalseBranch, this.goalsManager.getNumPathsFor(ffFalse));
-            }
+            logger.debug("Branch: {}, Number of Tests: {}, Num of Paths: {}", ffTrue.toString(), numTestsTrueBranch,
+                    this.goalsManager.getNumPathsFor(ffTrue));
+            logger.debug("Branch: {}, Number of Tests: {}, Num of Paths: {}", ffFalse.toString(), numTestsFalseBranch,
+                    this.goalsManager.getNumPathsFor(ffFalse));
 
             if (numTestsTrueBranch == 0 && numTestsFalseBranch == 0) {
                 continue;
@@ -228,24 +231,7 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
             } else if (Double.compare(testsPerPathTrueB, testsPerPathFalseB) < 0) {
                 this.goalsManager.getCurrentGoals().remove(ffFalse);
                 this.goalsManager.getCurrentGoals().add(ffTrue);
-            } else {
-                continue;
             }
-
-			/*numTestsTrueBranch = numTestsTrueBranch == 0 ? 1 : numTestsTrueBranch;
-			numTestsFalseBranch = numTestsFalseBranch == 0 ? 1 : numTestsFalseBranch;
-
-			double scaleUpFactor = (double) numTestsTrueBranch / numTestsFalseBranch;
-			if (Double.compare(scaleUpFactor, 1.0) > 0) {	// True Branch has more tests
-				((BranchCoverageTestFitness) ffFalse).setNumTestCasesInZeroFront((int) Math.ceil(scaleUpFactor * 1));
-				// 1 - Default Num Test Cases in Zero Front
-				((BranchCoverageTestFitness) ffTrue).setNumTestCasesInZeroFront(0);
-			} else {	// False Branch has more tests
-				((BranchCoverageTestFitness) ffTrue).setNumTestCasesInZeroFront((int) Math.ceil(1 / scaleUpFactor));
-				// 1 - Default Num Test Cases in Zero Front
-				((BranchCoverageTestFitness) ffFalse).setNumTestCasesInZeroFront(0);
-			}*/
-
         }
     }
 
@@ -306,7 +292,6 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
             this.notifyIteration();
         }
 
-        adjustCurrentGoals(true);
         LoggingUtils.getEvoLogger().info("Adjust Goals Overhead: {} ms",
                 (double) (this.adjustGoalsOH) / 1000000);
 
