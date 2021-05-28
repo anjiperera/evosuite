@@ -259,15 +259,12 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
         if (this.goalsManager.getCurrentGoals().size() == 0) {
             // trigger point to include non-buggy goals
             this.triggerFired = true;
-            goalsManager.updateCurrentGoals();
-            goalsManager.updateUncoveredGoals();
-            goalsManager.updateMethods();
-            goalsManager.updateBranchCoverageMaps();
+            updateGoalsManager();
 
             LoggingUtils.getEvoLogger().info(
-                    "Trigger to include non-buggy goals fired at {} seconds after {} generations",
+                    "* Trigger to include non-buggy goals fired at {} seconds after {} generations",
                     (int) (this.getCurrentTime() / 1000), this.currentIteration);
-            LoggingUtils.getEvoLogger().info("Trigger cause: No buggy goals");
+            LoggingUtils.getEvoLogger().info("* Trigger cause: No buggy goals");
         }
 
         LoggingUtils.getEvoLogger().info("* Initial Number of Goals in DynMOSA = " +
@@ -292,20 +289,19 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
 
         this.currentUncoveredGoals = goalsManager.getUncoveredGoals().size();
 
-        if (zeroGoalsCovered) {
+        if (this.zeroGoalsCovered) {
             if (goalsManager.getCoveredGoals().size() > 0) {
-                zeroGoalsCovered = false;
+                this.zeroGoalsCovered = false;
             }
         }
 
         // next generations
-        while (!isFinished() /*&& this.goalsManager.getUncoveredGoals().size() > 0*/) {
+        while (!isFinished()) {
             this.evolve();
             this.notifyIteration();
         }
 
-        LoggingUtils.getEvoLogger().info("Adjust Goals Overhead: {} ms",
-                (double) (this.adjustGoalsOH) / 1000000);
+        LoggingUtils.getEvoLogger().info("* Adjust Goals Overhead: {} ms", (double) (this.adjustGoalsOH) / 1000000);
 
         this.notifySearchFinished();
     }
