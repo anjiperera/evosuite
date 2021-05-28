@@ -137,6 +137,10 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 		this.currentGoals.addAll(graph.getRootBranches());
 
 		// Calculate number of independent paths leading up from each target (goal)
+		calculateIndependentPaths(fitnessFunctions);
+	}
+
+	protected void calculateIndependentPaths(List<FitnessFunction<T>> fitnessFunctions) {
 		long pathsCalculationStartTime = System.nanoTime();
 		for (FitnessFunction<T> rootBranch : graph.getRootBranches()) {
 			Set<FitnessFunction<T>> allParents = new HashSet<>();
@@ -184,7 +188,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	}
 
 	@SuppressWarnings("unchecked")
-	private void addDependencies4TryCatch() {
+	protected void addDependencies4TryCatch() {
 		logger.debug("Added dependencies for Try-Catch");
 		for (FitnessFunction<T> ff : this.uncoveredGoals){
 			if (ff instanceof TryCatchCoverageTestFitness){
@@ -195,7 +199,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 		}
 	}
 
-	private void initializeMaps(Set<FitnessFunction<T>> set){
+	protected void initializeMaps(Set<FitnessFunction<T>> set){
 		for (FitnessFunction<T> ff : set) {
 			BranchCoverageTestFitness goal = (BranchCoverageTestFitness) ff;
 			// Skip instrumented branches - we only want real branches
@@ -217,7 +221,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 		}
 	}
 
-	private void addDependencies4Output() {
+	protected void addDependencies4Output() {
 		logger.debug("Added dependencies for Output");
 		for (FitnessFunction<T> ff : this.uncoveredGoals){
 			if (ff instanceof OutputCoverageTestFitness){
@@ -249,7 +253,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	 * This methods derive the dependencies between {@link InputCoverageTestFitness} and branches. 
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
-	private void addDependencies4Input() {
+	protected void addDependencies4Input() {
 		logger.debug("Added dependencies for Input");
 		for (FitnessFunction<T> ff : this.uncoveredGoals){
 			if (ff instanceof InputCoverageTestFitness){
@@ -278,11 +282,11 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	}
 
 	/**
-	 * This methods derive the dependencies between {@link MethodCoverageTestFitness} and branches. 
+	 * This methods derive the dependencies between {@link MethodCoverageTestFitness} and branches.
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
 	@SuppressWarnings("unchecked")
-	private void addDependencies4Methods() {
+	protected void addDependencies4Methods() {
 		logger.debug("Added dependencies for Methods");
 		for (BranchCoverageTestFitness branch : this.dependencies.keySet()){
 			MethodCoverageTestFitness method = new MethodCoverageTestFitness(branch.getClassName(), branch.getMethod());
@@ -295,7 +299,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
 	@SuppressWarnings("unchecked")
-	private void addDependencies4MethodsNoException() {
+	protected void addDependencies4MethodsNoException() {
 		logger.debug("Added dependencies for MethodsNoException");
 		for (BranchCoverageTestFitness branch : this.dependencies.keySet()){
 			MethodNoExceptionCoverageTestFitness method = new MethodNoExceptionCoverageTestFitness(branch.getClassName(), branch.getMethod());
@@ -308,7 +312,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
 	@SuppressWarnings("unchecked")
-	private void addDependencies4CBranch() {
+	protected void addDependencies4CBranch() {
 		logger.debug("Added dependencies for CBranch");
 		CallGraph callGraph = DependencyAnalysis.getCallGraph();
 		for (BranchCoverageTestFitness branch : this.dependencies.keySet()) {
@@ -324,7 +328,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	 * This methods derive the dependencies between {@link WeakMutationTestFitness} and branches. 
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
-	private void addDependencies4WeakMutation() {
+	protected void addDependencies4WeakMutation() {
 		logger.debug("Added dependencies for Weak-Mutation");
 		for (FitnessFunction<T> ff : this.uncoveredGoals){
 			if (ff instanceof WeakMutationTestFitness){
@@ -346,7 +350,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	 * This methods derive the dependencies between {@link org.evosuite.coverage.mutation.StrongMutationTestFitness} and branches.
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
-	private void addDependencies4StrongMutation() {
+	protected void addDependencies4StrongMutation() {
 		logger.debug("Added dependencies for Strong-Mutation");
 		for (FitnessFunction<T> ff : this.uncoveredGoals){
 			if (ff instanceof StrongMutationTestFitness){
@@ -368,7 +372,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	 * This methods derive the dependencies between  {@link LineCoverageTestFitness} and branches. 
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
-	private void addDependencies4Line() {
+	protected void addDependencies4Line() {
 		logger.debug("Added dependencies for Lines");
 		for (FitnessFunction<T> ff : this.uncoveredGoals){
 			if (ff instanceof LineCoverageTestFitness){
@@ -394,7 +398,7 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	 * Therefore, it is used to update 'this.dependencies'
 	 */
 	@SuppressWarnings("unchecked")
-	private void addDependencies4Statement() {
+	protected void addDependencies4Statement() {
 		logger.debug("Added dependencies for Statements");
 		for (FitnessFunction<T> ff : this.uncoveredGoals){
 			if (ff instanceof StatementCoverageTestFitness){
@@ -409,8 +413,6 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 			}
 		}
 	}
-
-
 
 	@SuppressWarnings("unchecked")
 	@Override
