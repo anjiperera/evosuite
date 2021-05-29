@@ -134,6 +134,43 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 	}
 
 	/**
+	 * Switch on/off current goals to balance test coverage among goals based on number of tests per an independent
+	 * path of each goal
+	 */
+	protected void adjustCurrentGoals() {
+		for (int actualBranchId : this.goalsManager.getBranchCoverageTrueMap().keySet()) {
+			FitnessFunction ffTrue = this.goalsManager.getBranchCoverageTrueMap().get(actualBranchId);
+			FitnessFunction ffFalse = this.goalsManager.getBranchCoverageFalseMap().get(actualBranchId);
+
+			int numTestsTrueBranch = this.goalsManager.getNumTests(ffTrue.toString());
+			int numTestsFalseBranch = this.goalsManager.getNumTests(ffFalse.toString());
+
+			logger.debug("Branch: {}, Number of Tests: {}, Num of Paths: {}", ffTrue.toString(), numTestsTrueBranch,
+					this.goalsManager.getNumPathsFor(ffTrue));
+			logger.debug("Branch: {}, Number of Tests: {}, Num of Paths: {}", ffFalse.toString(), numTestsFalseBranch,
+					this.goalsManager.getNumPathsFor(ffFalse));
+
+			if (numTestsTrueBranch == 0 && numTestsFalseBranch == 0) {
+				continue;
+			}
+
+			int numPathsTrueBranch = this.goalsManager.getNumPathsFor(ffTrue);
+			int numPathsFalseBranch = this.goalsManager.getNumPathsFor(ffFalse);
+
+			double testsPerPathTrueB = (double) numTestsTrueBranch / numPathsTrueBranch;
+			double testsPerPathFalseB = (double) numTestsFalseBranch / numPathsFalseBranch;
+
+			if (Double.compare(testsPerPathTrueB, testsPerPathFalseB) > 0) {
+				this.goalsManager.getCurrentGoals().remove(ffTrue);
+				this.goalsManager.getCurrentGoals().add(ffFalse);
+			} else if (Double.compare(testsPerPathTrueB, testsPerPathFalseB) < 0) {
+				this.goalsManager.getCurrentGoals().remove(ffFalse);
+				this.goalsManager.getCurrentGoals().add(ffTrue);
+			}
+		}
+	}
+
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override

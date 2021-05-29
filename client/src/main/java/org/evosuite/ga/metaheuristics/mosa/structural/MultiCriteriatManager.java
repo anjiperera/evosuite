@@ -568,4 +568,12 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
     public int getNumPathsFor(FitnessFunction<T> ff) {
 		return this.numPaths.get(ff);
 	}
+
+	public Map<Integer, FitnessFunction<T>> getBranchCoverageTrueMap() {
+		return branchCoverageTrueMap;
+	}
+
+	public Map<Integer, FitnessFunction<T>> getBranchCoverageFalseMap() {
+		return branchCoverageFalseMap;
+	}
 }

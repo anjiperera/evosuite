@@ -327,14 +327,6 @@ public class PredictiveCriteriaManager<T extends Chromosome> extends MultiCriter
 
     }
 
-    public Map<Integer, FitnessFunction<T>> getBranchCoverageTrueMap() {
-        return branchCoverageTrueMap;
-    }
-
-    public Map<Integer, FitnessFunction<T>> getBranchCoverageFalseMap() {
-        return branchCoverageFalseMap;
-    }
-
     public void updateCurrentGoals() {
         for (FitnessFunction<T> ff : graph.getRootBranches()) {
             if (!((BranchCoverageTestFitness) ff).isBuggy()) {

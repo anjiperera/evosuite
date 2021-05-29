@@ -53,9 +53,6 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(PreMOSA.class);
 
-    /** Manager to determine the test goals to consider at each generation */
-    protected PredictiveCriteriaManager<T> goalsManager = null;
-
     /** Total time taken to adjust the goals (switch on/off goals) in nano seconds */
     private long adjustGoalsOH = 0;
 
@@ -156,43 +153,6 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
     }
 
     /**
-     * Switch on/off current goals to balance test coverage among goals based on number of tests per an independent
-     * path of each goal
-     */
-    private void adjustCurrentGoals() {
-        for (int actualBranchId : this.goalsManager.getBranchCoverageTrueMap().keySet()) {
-            FitnessFunction ffTrue = this.goalsManager.getBranchCoverageTrueMap().get(actualBranchId);
-            FitnessFunction ffFalse = this.goalsManager.getBranchCoverageFalseMap().get(actualBranchId);
-
-            int numTestsTrueBranch = this.goalsManager.getNumTests(ffTrue.toString());
-            int numTestsFalseBranch = this.goalsManager.getNumTests(ffFalse.toString());
-
-            logger.debug("Branch: {}, Number of Tests: {}, Num of Paths: {}", ffTrue.toString(), numTestsTrueBranch,
-                    this.goalsManager.getNumPathsFor(ffTrue));
-            logger.debug("Branch: {}, Number of Tests: {}, Num of Paths: {}", ffFalse.toString(), numTestsFalseBranch,
-                    this.goalsManager.getNumPathsFor(ffFalse));
-
-            if (numTestsTrueBranch == 0 && numTestsFalseBranch == 0) {
-                continue;
-            }
-
-            int numPathsTrueBranch = this.goalsManager.getNumPathsFor(ffTrue);
-            int numPathsFalseBranch = this.goalsManager.getNumPathsFor(ffFalse);
-
-            double testsPerPathTrueB = (double) numTestsTrueBranch / numPathsTrueBranch;
-            double testsPerPathFalseB = (double) numTestsFalseBranch / numPathsFalseBranch;
-
-            if (Double.compare(testsPerPathTrueB, testsPerPathFalseB) > 0) {
-                this.goalsManager.getCurrentGoals().remove(ffTrue);
-                this.goalsManager.getCurrentGoals().add(ffFalse);
-            } else if (Double.compare(testsPerPathTrueB, testsPerPathFalseB) < 0) {
-                this.goalsManager.getCurrentGoals().remove(ffFalse);
-                this.goalsManager.getCurrentGoals().add(ffTrue);
-            }
-        }
-    }
-
-    /**
      * Add non-buggy goals to the search if number of consecutive iterations without buggy goals coverage improvement
      * is \geq org.evosuite.Properties.ITERATIONS_WO_IMPROVEMENT or if no buggy goal is covered for
      * org.evosuite.Properties.ZERO_COVERAGE_TRIGGER
@@ -245,10 +205,11 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
      * Update goals manager after the trigger is fired to include non-buggy goals in the search
      */
     private void updateGoalsManager() {
-        goalsManager.updateCurrentGoals();
-        goalsManager.updateUncoveredGoals();
-        goalsManager.updateMethods();
-        goalsManager.updateBranchCoverageMaps();
+        // TODO: Currently using down-casting -> Fix that
+        ((PredictiveCriteriaManager) goalsManager).updateCurrentGoals();
+        ((PredictiveCriteriaManager) goalsManager).updateUncoveredGoals();
+        ((PredictiveCriteriaManager) goalsManager).updateMethods();
+        ((PredictiveCriteriaManager) goalsManager).updateBranchCoverageMaps();
     }
 
     /**
