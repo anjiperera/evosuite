@@ -151,7 +151,7 @@ public class PredictiveCriteriaManager<T extends Chromosome> extends MultiCriter
                     addDependencies4CBranch();
                     break;
                 default:
-                    LoggingUtils.getEvoLogger().error("The criterion {} is not currently supported in DynaMOSA", criterion.name());
+                    LoggingUtils.getEvoLogger().error("The criterion {} is not currently supported in PreMOSA", criterion.name());
             }
         }
 
