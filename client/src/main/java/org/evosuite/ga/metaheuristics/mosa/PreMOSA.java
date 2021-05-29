@@ -53,9 +53,6 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
 
     private static final Logger logger = LoggerFactory.getLogger(PreMOSA.class);
 
-    /** Total time taken to adjust the goals (switch on/off goals) in nano seconds */
-    private long adjustGoalsOH = 0;
-
     /** Number of current consecutive iterations without buggy goals coverage improvement */
     private int currentIterationsWoImprovements = 0;
 
@@ -90,12 +87,14 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
         // Ranking the union
         logger.debug("Union Size = {}", union.size());
 
-        // Switch off targets to balance test coverage
-        long adjustGoalsStartTime = System.nanoTime();
-        adjustCurrentGoals();
-        long adjustGoalEndTime = System.nanoTime();
+        if (Properties.BALANCE_TEST_COV) {
+            // Switch off targets to balance test coverage
+            long adjustGoalsStartTime = System.nanoTime();
+            adjustCurrentGoals();
+            long adjustGoalEndTime = System.nanoTime();
 
-        this.adjustGoalsOH += adjustGoalEndTime - adjustGoalsStartTime;
+            this.adjustGoalsOH += adjustGoalEndTime - adjustGoalsStartTime;
+        }
 
         // Ranking the union using the best rank algorithm (modified version of the non dominated sorting algorithm
         this.rankingFunction.computeRankingAssignment(union, this.goalsManager.getCurrentGoals());
@@ -266,7 +265,9 @@ public class PreMOSA<T extends Chromosome> extends DynaMOSA<T> {
             this.notifyIteration();
         }
 
-        LoggingUtils.getEvoLogger().info("* Adjust Goals Overhead: {} ms", (double) (this.adjustGoalsOH) / 1000000);
+        if (Properties.BALANCE_TEST_COV) {
+            LoggingUtils.getEvoLogger().info("* Adjust Goals Overhead: {} ms", (double) (this.adjustGoalsOH) / 1000000);
+        }
 
         this.notifySearchFinished();
     }

@@ -1314,6 +1314,9 @@ public class Properties {
 			" trigger the inclusion of non buggy goals")
 	public static int ZERO_COVERAGE_TRIGGER = 25;
 
+	@Parameter(key = "balance_test_cov", description = "Enable balanced test coverage of targets")
+	public static boolean BALANCE_TEST_COV = false;
+
 	// ---------------------------------------------------------------
 	// Contracts / Asserts:
 	@Parameter(key = "check_contracts", description = "Check contracts during test execution")
