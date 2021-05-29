@@ -65,7 +65,9 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 		init(fitnessFunctions);
 	}
 
-	protected abstract void init(List<FitnessFunction<T>> fitnessFunctions);
+	protected void init(List<FitnessFunction<T>> fitnessFunctions) {
+
+	}
 
 	/**
 	 * Update the set of covered goals and the set of current goals (actual objectives)
