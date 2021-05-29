@@ -146,8 +146,10 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 		// initialize current goals
 		this.currentGoals.addAll(graph.getRootBranches());
 
-		// Calculate number of independent paths leading up from each target (goal)
-		calculateIndependentPaths(fitnessFunctions);
+		if (Properties.BALANCE_TEST_COV) {
+			// Calculate number of independent paths leading up from each target (goal)
+			calculateIndependentPaths(fitnessFunctions);
+		}
 	}
 
 	protected void calculateIndependentPaths(List<FitnessFunction<T>> fitnessFunctions) {

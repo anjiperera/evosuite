@@ -174,8 +174,10 @@ public class PredictiveCriteriaManager<T extends Chromosome> extends MultiCriter
             }
         }
 
-        // Calculate number of independent paths leading up from each target (goal)
-        calculateIndependentPaths(fitnessFunctions);
+        if (Properties.BALANCE_TEST_COV) {
+            // Calculate number of independent paths leading up from each target (goal)
+            calculateIndependentPaths(fitnessFunctions);
+        }
     }
 
     private void initMethods(List<FitnessFunction<T>> fitnessFunctions) {
