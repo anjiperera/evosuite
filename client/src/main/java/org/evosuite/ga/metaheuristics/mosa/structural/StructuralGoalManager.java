@@ -82,17 +82,6 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 		return coveredGoals;
 	}
 
-	protected boolean isAlreadyCovered(FitnessFunction<T> target){
-		if (uncoveredGoals.size() < coveredGoals.keySet().size()){
-			if (!uncoveredGoals.contains(target))
-				return true;
-		} else {
-			if (coveredGoals.keySet().contains(target))
-				return true;
-		}
-		return false;
-	}
-
 	protected void updateCoveredGoals(FitnessFunction<T> f, T tc) {
 		// the next two lines are needed since that coverage information are used
 		// during EvoSuite post-processing
