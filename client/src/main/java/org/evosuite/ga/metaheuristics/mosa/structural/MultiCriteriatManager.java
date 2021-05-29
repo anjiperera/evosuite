@@ -69,20 +69,30 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 	protected Map<BranchCoverageTestFitness, Set<FitnessFunction<T>>> dependencies;
 
 	/** Number of independent paths leading up from each target (goal) */
-	protected Map<FitnessFunction<T>, Integer> numPaths = new LinkedHashMap<>();
+	protected Map<FitnessFunction<T>, Integer> numPaths;
 
 	/** Children of each target (goal) */
-	protected Map<FitnessFunction<T>, Set<FitnessFunction<T>>> children = new LinkedHashMap<>();
+	protected Map<FitnessFunction<T>, Set<FitnessFunction<T>>> children;
 
-	protected final Map<Integer, FitnessFunction<T>> branchCoverageTrueMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
-	protected final Map<Integer, FitnessFunction<T>> branchCoverageFalseMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
-	protected final Map<String, FitnessFunction<T>> branchlessMethodCoverageMap = new LinkedHashMap<String, FitnessFunction<T>>();
+	protected Map<Integer, FitnessFunction<T>> branchCoverageTrueMap;
+	protected Map<Integer, FitnessFunction<T>> branchCoverageFalseMap;
+	protected Map<String, FitnessFunction<T>> branchlessMethodCoverageMap;
 
 	public MultiCriteriatManager(List<FitnessFunction<T>> fitnessFunctions) {
 		super(fitnessFunctions);
+		instantiateAttributes();
+		init(fitnessFunctions);
 	}
 
-	@Override
+	protected void instantiateAttributes() {
+		numPaths = new LinkedHashMap<>();
+		children = new LinkedHashMap<>();
+
+		branchCoverageTrueMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
+		branchCoverageFalseMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
+		branchlessMethodCoverageMap = new LinkedHashMap<String, FitnessFunction<T>>();
+	}
+
 	protected void init(List<FitnessFunction<T>> fitnessFunctions) {
 		// initialize uncovered goals
 		uncoveredGoals.addAll(fitnessFunctions);

@@ -65,19 +65,31 @@ public class PredictiveCriteriaManager<T extends Chromosome> extends MultiCriter
     private static final Logger logger = LoggerFactory.getLogger(PredictiveCriteriaManager.class);
 
     /** Current methods in the search */
-    private Set<MethodCoverageTestFitness> methods = new HashSet<>();
+    private Set<MethodCoverageTestFitness> methods;
 
-    private Set<MethodCoverageTestFitness> nonBuggyMethods = new HashSet<>();;
+    private Set<MethodCoverageTestFitness> nonBuggyMethods;
 
     private Set<FitnessFunction<T>> nonBuggyGoals;
 
     /** Branch(less) coverage maps of non-buggy goals */
-    private final Map<Integer, FitnessFunction<T>> nBBranchCoverageTrueMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
-    private final Map<Integer, FitnessFunction<T>> nBBranchCoverageFalseMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
-    private final Map<String, FitnessFunction<T>> nBBranchlessMethodCoverageMap = new LinkedHashMap<String, FitnessFunction<T>>();
+    private Map<Integer, FitnessFunction<T>> nBBranchCoverageTrueMap;
+    private Map<Integer, FitnessFunction<T>> nBBranchCoverageFalseMap;
+    private Map<String, FitnessFunction<T>> nBBranchlessMethodCoverageMap;
 
     public PredictiveCriteriaManager(List<FitnessFunction<T>> fitnessFunctions) {
         super(fitnessFunctions);
+    }
+
+    @Override
+    protected void instantiateAttributes() {
+        super.instantiateAttributes();
+
+        methods = new HashSet<>();
+        nonBuggyMethods = new HashSet<>();
+
+        nBBranchCoverageTrueMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
+        nBBranchCoverageFalseMap = new LinkedHashMap<Integer, FitnessFunction<T>>();
+        nBBranchlessMethodCoverageMap = new LinkedHashMap<String, FitnessFunction<T>>();
     }
 
     @Override

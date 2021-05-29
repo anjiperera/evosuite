@@ -61,12 +61,6 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 		coveredGoals = new HashMap<FitnessFunction<T>, T>(fitnessFunctions.size());
 		archive = new HashMap<T, List<FitnessFunction<T>>>();
 		tests = new HashMap<>(fitnessFunctions.size());
-
-		init(fitnessFunctions);
-	}
-
-	protected void init(List<FitnessFunction<T>> fitnessFunctions) {
-
 	}
 
 	/**
