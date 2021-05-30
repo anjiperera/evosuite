@@ -214,6 +214,8 @@ public class PropertiesSuiteGAFactory extends PropertiesSearchAlgorithmFactory<T
 			Properties.REMOVE_COVERED_TARGETS = false;
 			// PreMOSA does not stop after all the goals/targets are covered
 			Properties.STOP_ZERO = false;
+			// PreMOSA archives all the test cases by default
+			Properties.ARCHIVE_ALL = true;
 			return new PreMOSA<TestSuiteChromosome>(factory);
         case ONE_PLUS_LAMBDA_LAMBDA_GA:
             logger.info("Chosen search algorithm: 1 + (lambda, lambda)GA");

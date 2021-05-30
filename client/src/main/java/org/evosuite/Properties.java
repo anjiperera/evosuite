@@ -1240,6 +1240,9 @@ public class Properties {
 	@Parameter(key = "archive_type", description = "Which type of archive to keep track of covered goals during search")
 	public static ArchiveType ARCHIVE_TYPE = ArchiveType.COVERAGE;
 
+	@Parameter(key = "archive_all", description = "Archive all the test cases generated")
+	public static boolean ARCHIVE_ALL = false;
+
 	@Parameter(key = "seed_file", description = "File storing TestGenerationResult or GeneticAlgorithm")
 	public static String SEED_FILE = "";
 
