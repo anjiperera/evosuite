@@ -212,6 +212,8 @@ public class PropertiesSuiteGAFactory extends PropertiesSearchAlgorithmFactory<T
 			logger.info("Chosen search algorithm: PreMOSA");
 			// PreMOSA does not remove covered targets from the search by default
 			Properties.REMOVE_COVERED_TARGETS = false;
+			// PreMOSA does not stop after all the goals/targets are covered
+			Properties.STOP_ZERO = false;
 			return new PreMOSA<TestSuiteChromosome>(factory);
         case ONE_PLUS_LAMBDA_LAMBDA_GA:
             logger.info("Chosen search algorithm: 1 + (lambda, lambda)GA");
