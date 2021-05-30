@@ -1240,6 +1240,9 @@ public class Properties {
 	@Parameter(key = "archive_type", description = "Which type of archive to keep track of covered goals during search")
 	public static ArchiveType ARCHIVE_TYPE = ArchiveType.COVERAGE;
 
+	@Parameter(key = "archive_all", description = "Archive all the test cases generated")
+	public static boolean ARCHIVE_ALL = false;
+
 	@Parameter(key = "seed_file", description = "File storing TestGenerationResult or GeneticAlgorithm")
 	public static String SEED_FILE = "";
 
@@ -1316,6 +1319,9 @@ public class Properties {
 
 	@Parameter(key = "balance_test_cov", description = "Enable balanced test coverage of targets")
 	public static boolean BALANCE_TEST_COV = false;
+
+	@Parameter(key = "remove_covered_targets", description = "Remove covered targets from the search")
+	public static boolean REMOVE_COVERED_TARGETS = true;
 
 	// ---------------------------------------------------------------
 	// Contracts / Asserts:

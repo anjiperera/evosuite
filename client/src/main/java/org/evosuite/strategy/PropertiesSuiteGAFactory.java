@@ -203,9 +203,19 @@ public class PropertiesSuiteGAFactory extends PropertiesSearchAlgorithmFactory<T
             return new MOSA<TestSuiteChromosome>(factory);
         case DYNAMOSA:
         	logger.info("Chosen search algorithm: DynaMOSA");
-            return new DynaMOSA<TestSuiteChromosome>(factory);
+            if (Properties.BALANCE_TEST_COV) {
+            	// Balanced test coverage is only used when covered targets are not removed from the search
+            	Properties.REMOVE_COVERED_TARGETS = false;
+			}
+        	return new DynaMOSA<TestSuiteChromosome>(factory);
 		case PREMOSA:
 			logger.info("Chosen search algorithm: PreMOSA");
+			// PreMOSA does not remove covered targets from the search by default
+			Properties.REMOVE_COVERED_TARGETS = false;
+			// PreMOSA does not stop after all the goals/targets are covered
+			Properties.STOP_ZERO = false;
+			// PreMOSA archives all the test cases by default
+			Properties.ARCHIVE_ALL = true;
 			return new PreMOSA<TestSuiteChromosome>(factory);
         case ONE_PLUS_LAMBDA_LAMBDA_GA:
             logger.info("Chosen search algorithm: 1 + (lambda, lambda)GA");

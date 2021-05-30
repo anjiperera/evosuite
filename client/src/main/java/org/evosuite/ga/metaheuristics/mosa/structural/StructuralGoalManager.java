@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.evosuite.Properties;
 import org.evosuite.coverage.branch.BranchCoverageTestFitness;
 import org.evosuite.ga.Chromosome;
 import org.evosuite.ga.FitnessFunction;
@@ -95,19 +96,28 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 			toArchive = true;
 			coveredGoals.put(f, tc);
 			uncoveredGoals.remove(f);
-			//currentGoals.remove(f);	//not removing covered goals from currentGoals
+			if (Properties.REMOVE_COVERED_TARGETS) {
+				currentGoals.remove(f);    // removing covered goals from currentGoals
+			}
 		} else {
 			double bestSize = best.size();
 			double size = tc.size();
 			if (size < bestSize && size > 1){
 				toArchive = true;
 				coveredGoals.put(f, tc);
-				/*archive.get(best).remove(f);
-				if (archive.get(best).size() == 0)
-					archive.remove(best);*/
+				if (!Properties.ARCHIVE_ALL) {
+					archive.get(best).remove(f);
+					if (archive.get(best).size() == 0) {
+						archive.remove(best);
+						removeFromTests(best);
+					}
+				}
 			}
 		}
-		toArchive = true;	//since we want to archive the test case anyway
+
+		if (Properties.ARCHIVE_ALL) {
+			toArchive = true;    // since we want to archive the test case anyway
+		}
 
 		// update archive
 		if (toArchive){
@@ -120,9 +130,17 @@ public abstract class StructuralGoalManager<T extends Chromosome> {
 				coveredTargets.add(f);
 			}
 
-			if (f instanceof BranchCoverageTestFitness) {
-				addTestTo(f, tc);
+			if (Properties.BALANCE_TEST_COV) {
+				if (f instanceof BranchCoverageTestFitness) {
+					addTestTo(f, tc);
+				}
 			}
+		}
+	}
+
+	private void removeFromTests(T tc) {
+		for (Set<T> testsForFf : tests.values()) {
+			testsForFf.remove(tc);
 		}
 	}
 

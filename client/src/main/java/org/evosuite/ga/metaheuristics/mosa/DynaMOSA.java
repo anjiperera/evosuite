@@ -211,7 +211,7 @@ public class DynaMOSA<T extends Chromosome> extends AbstractMOSA<T> {
 		}
 
 		// next generations
-		while (!isFinished() /*&& this.goalsManager.getUncoveredGoals().size() > 0*/) {
+		while (!isFinished() /*&& this.goalsManager.getUncoveredGoals().size() > 0*/) {	// second condition is handled by stop_zero option
 			this.evolve();
 			this.notifyIteration();
 		}
