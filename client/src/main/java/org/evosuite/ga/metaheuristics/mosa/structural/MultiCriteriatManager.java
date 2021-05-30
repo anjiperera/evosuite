@@ -469,7 +469,11 @@ public class MultiCriteriatManager<T extends Chromosome> extends StructuralGoalM
 				currentGoals.add(fitnessFunction);
 			}	
 		}
-		//currentGoals.removeAll(coveredGoals.keySet());	//not removing covered goals from currentGoals
+
+		if (Properties.REMOVE_COVERED_TARGETS) {
+			currentGoals.removeAll(coveredGoals.keySet());
+		}
+
 		// 2) we update the archive
 		for (Integer branchid : result.getTrace().getCoveredFalseBranches()){
 			FitnessFunction<T> branch = this.branchCoverageFalseMap.get(branchid);

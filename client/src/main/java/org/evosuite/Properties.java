@@ -1317,6 +1317,9 @@ public class Properties {
 	@Parameter(key = "balance_test_cov", description = "Enable balanced test coverage of targets")
 	public static boolean BALANCE_TEST_COV = false;
 
+	@Parameter(key = "remove_covered_targets", description = "Remove covered targets from the search")
+	public static boolean REMOVE_COVERED_TARGETS = true;
+
 	// ---------------------------------------------------------------
 	// Contracts / Asserts:
 	@Parameter(key = "check_contracts", description = "Check contracts during test execution")
