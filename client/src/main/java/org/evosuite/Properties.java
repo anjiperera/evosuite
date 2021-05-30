@@ -315,7 +315,7 @@ public class Properties {
 		// mu-lambda
 		ONE_PLUS_LAMBDA_LAMBDA_GA, ONE_PLUS_ONE_EA, MU_PLUS_LAMBDA_EA, MU_LAMBDA_EA,
 		// many-objective algorithms
-		MOSA, DYNAMOSA, LIPS, MIO,
+		MOSA, DYNAMOSA, LIPS, MIO, PREMOSA,
 		// multiple-objective optimisation algorithms
 		NSGAII, SPEA2
 	}
@@ -1313,6 +1313,9 @@ public class Properties {
 	@Parameter(key = "zero_coverage_trigger", description = "Number of iterations with zero buggy goals coverage to" +
 			" trigger the inclusion of non buggy goals")
 	public static int ZERO_COVERAGE_TRIGGER = 25;
+
+	@Parameter(key = "balance_test_cov", description = "Enable balanced test coverage of targets")
+	public static boolean BALANCE_TEST_COV = false;
 
 	// ---------------------------------------------------------------
 	// Contracts / Asserts:
