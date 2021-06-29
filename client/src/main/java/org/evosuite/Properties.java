@@ -315,7 +315,7 @@ public class Properties {
 		// mu-lambda
 		ONE_PLUS_LAMBDA_LAMBDA_GA, ONE_PLUS_ONE_EA, MU_PLUS_LAMBDA_EA, MU_LAMBDA_EA,
 		// many-objective algorithms
-		MOSA, DYNAMOSA, LIPS, MIO,
+		MOSA, DYNAMOSA, LIPS, MIO, PREMOSA,
 		// multiple-objective optimisation algorithms
 		NSGAII, SPEA2
 	}
@@ -1240,6 +1240,9 @@ public class Properties {
 	@Parameter(key = "archive_type", description = "Which type of archive to keep track of covered goals during search")
 	public static ArchiveType ARCHIVE_TYPE = ArchiveType.COVERAGE;
 
+	@Parameter(key = "archive_all", description = "Archive all the test cases generated")
+	public static boolean ARCHIVE_ALL = false;
+
 	@Parameter(key = "seed_file", description = "File storing TestGenerationResult or GeneticAlgorithm")
 	public static String SEED_FILE = "";
 
@@ -1313,6 +1316,12 @@ public class Properties {
 	@Parameter(key = "zero_coverage_trigger", description = "Number of iterations with zero buggy goals coverage to" +
 			" trigger the inclusion of non buggy goals")
 	public static int ZERO_COVERAGE_TRIGGER = 25;
+
+	@Parameter(key = "balance_test_cov", description = "Enable balanced test coverage of targets")
+	public static boolean BALANCE_TEST_COV = false;
+
+	@Parameter(key = "remove_covered_targets", description = "Remove covered targets from the search")
+	public static boolean REMOVE_COVERED_TARGETS = true;
 
 	// ---------------------------------------------------------------
 	// Contracts / Asserts:
